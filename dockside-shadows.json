@@ -1,0 +1,621 @@
+{
+  "start": "D1_Intro",
+  "meta": {
+    "title": { "ru": "Тени набережной", "en": "Dockside Shadows" },
+    "imageStyle": "black_and_white",
+    "imageViolencePolicy": "blur_graphic_details",
+    "imageDirectives": {
+      "ru": "Все изображения должны быть черно-белыми. В сценах с насилием не использовать заглушки, а замыливать (blur) графические детали.",
+      "en": "All images must be black-and-white. In violent scenes do not use placeholders; blur graphic details instead."
+    },
+    "achievements": [
+      { "code": "start", "title": "Начало дела", "when": { "type": "quest_started" } },
+      { "code": "first_crime_scene", "title": "Первое место преступления", "when": { "type": "reach_scene", "sceneId": "D1_CrimeScene" } },
+      { "code": "find_murder_weapon", "title": "Орудие убийства", "when": { "type": "have_items_all", "items": ["murder_weapon"] } },
+      { "code": "unlock_phone", "title": "Вскрытый телефон", "when": { "type": "reach_scene", "sceneId": "D2_PhoneUnlocked" } },
+      { "code": "secret_passage", "title": "Секретный ход", "when": { "type": "reach_scene", "sceneId": "D3_SecretPassage" } },
+      { "code": "all_keys", "title": "Собраны все ключи", "when": { "type": "have_items_all", "items": ["key_red", "key_blue", "key_green"] } },
+      { "code": "confrontation_complete", "title": "Очная ставка", "when": { "type": "reach_scene", "sceneId": "D4_Confrontation" } },
+      { "code": "end_manager", "title": "Финал: Менеджер", "when": { "type": "reach_scene", "sceneId": "END_Manager" } },
+      { "code": "end_trainer", "title": "Финал: Тренер", "when": { "type": "reach_scene", "sceneId": "END_Trainer" } },
+      { "code": "end_cold_case", "title": "Финал: Глухарь", "when": { "type": "reach_scene", "sceneId": "END_ColdCase" } },
+      { "code": "end_coverup", "title": "Финал: Замято", "when": { "type": "reach_scene", "sceneId": "END_CoverUp" } },
+      { "code": "end_expose_ring", "title": "Финал: Разоблачение схемы", "when": { "type": "reach_scene", "sceneId": "END_ExposeRing" } },
+      { "code": "end_guard_scapegoat", "title": "Финал: Козёл отпущения", "when": { "type": "reach_scene", "sceneId": "END_GuardFallGuy" } },
+      { "code": "end_public_leak", "title": "Финал: Утечка в СМИ", "when": { "type": "reach_scene", "sceneId": "END_PublicLeak" } },
+      { "code": "end_bad_injury", "title": "Финал: Провал операции", "when": { "type": "reach_scene", "sceneId": "END_BadInjury" } },
+      { "code": "end_self_defense", "title": "Финал: Самооборона", "when": { "type": "reach_scene", "sceneId": "END_SelfDefense" } },
+      { "code": "end_wrongful_arrest", "title": "Финал: Ошибочный арест", "when": { "type": "reach_scene", "sceneId": "END_WrongfulArrest" } },
+      { "code": "end_internal_affairs", "title": "Финал: Служебная проверка", "when": { "type": "reach_scene", "sceneId": "END_InternalAffairs" } },
+      { "code": "end_anonymous_trap", "title": "Финал: Ловушка", "when": { "type": "reach_scene", "sceneId": "END_AnonymousTrap" } },
+      { "code": "end_corporate_shield", "title": "Финал: Корпоративная броня", "when": { "type": "reach_scene", "sceneId": "END_CorporateShield" } },
+      { "code": "end_mafia_retaliation", "title": "Финал: Ответ мафии", "when": { "type": "reach_scene", "sceneId": "END_MafiaRetaliation" } }
+    ]
+  },
+  "nodes": {
+    "D1_Intro": {
+      "title": "Тревожный звонок",
+      "imgPrompt": "detective awakened by late-night phone call, moody lighting, rainy city outside window, noir style",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D1_Intro.webp",
+      "text": "02:47. Вам звонит дежурный: на набережной найдено тело. Вам поручено вести дело. Утро промозглое, город сонный, но журналисты уже чуют сенсацию.",
+      "choices": [
+        { "label": "Выдвинуться на место", "goto": "D1_CrimeScene", "effects": { "add": ["case_started"] } },
+        { "label": "Сначала заскочить в отдел за набором криминалиста", "goto": "D1_Precinct" }
+      ]
+    },
+
+    "END_SelfDefense": {
+      "title": "Самооборона",
+      "text": "Тренер утверждает, что отбивался после удара. Улики двусмысленны, дело квалифицируют как превышение самообороны.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_WrongfulArrest": {
+      "title": "Ошибочный арест",
+      "text": "Под давлением сроков задержан неверный подозреваемый. Адвокат разносит дело в суде. Репутация отдела страдает.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_InternalAffairs": {
+      "title": "Служебная проверка",
+      "text": "После жалобы свидетеля начинается проверка. Вас отстраняют от дела. Остальные доводят его без вас.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_AnonymousTrap": {
+      "title": "Ловушка",
+      "text": "Анонимная наводка приводит в тупик. Во время засады вас обводят вокруг пальца. Подозреваемые уходят.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_CorporateShield": {
+      "title": "Корпоративная броня",
+      "text": "Компания моментально подключает адвокатов и PR. Прямых улик не хватает, дело рассыпается в медиа.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_MafiaRetaliation": {
+      "title": "Ответ мафии",
+      "text": "Неизвестные ‘сжигают’ информатора и подчищают следы. Расследование сворачивается из‑за угроз безопасности.",
+      "end": true,
+      "choices": []
+    },
+
+    "D1_Precinct": {
+      "title": "Отдел полиции",
+      "imgPrompt": "police precinct office at dawn, fluorescent lights, folders and evidence kits on shelves, modern detective vibe",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D1_Precinct.webp",
+      "text": "Кабинет ещё пуст. Доступен шкаф с оборудованием. В базе – краткая сводка о пострадавшем." ,
+      "choices": [
+        { "label": "Взять перчатки и пакетики для улик", "goto": "D1_Precinct", "effects": { "add": ["gloves", "evidence_bags"] } },
+        { "label": "Проверить сводку", "goto": "D1_Brief" },
+        { "label": "На место преступления", "goto": "D1_CrimeScene" }
+      ]
+    },
+
+    "D1_Brief": {
+      "title": "Сводка по жертве",
+      "imgPrompt": "computer screen with victim profile and call logs, blue UI glow, police database",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D1_Brief.webp",
+      "text": "Имя: Кирилл Л., 34. Бухгалтер в частной логистической компании. Последний вызов – 01:58, неизвестный номер. Конфликты на работе отмечались.",
+      "choices": [
+        { "label": "Назад", "goto": "D1_Precinct" }
+      ]
+    },
+
+    "D1_CrimeScene": {
+      "title": "Набережная",
+      "imgPrompt": "rainy city docks at night, police lights reflecting on wet asphalt, yellow tape",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D1_CrimeScene.webp",
+      "text": "Тело у парапета. Следователь-криминалист уже отметил кровавые следы. Рядом урна, камер наблюдения поблизости нет. На воде дрейфует деревянный ящик.",
+      "choices": [
+        { "label": "Осмотреть тело", "goto": "D1_Body" },
+        { "label": "Осмотреть урну и тротуар", "goto": "D1_Trash" },
+        { "label": "Достать ящик багром", "goto": "D1_Crate", "require": { "hasAny": ["gloves"] } },
+        { "label": "Позвонить в отдел связи (проверить биллинги)", "goto": "D1_CallRecords" },
+        { "label": "Поехать по адресу жертвы", "goto": "D2_ApartmentHall" },
+        { "label": "Вернуться в отдел", "goto": "D1_Precinct" }
+      ]
+    },
+
+    "D1_Body": {
+      "title": "Осмотр тела",
+      "imgPrompt": "riverside crime scene close-up, body near railing, latex gloves, evidence markers, cinematic",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D1_Body.webp",
+      "text": "Рана колотая, глубина небольшая, но удар точный. На запястье – смарт-часы с код-блокировкой. Телефон в кармане, также запаролен.",
+      "choices": [
+        { "label": "Изъять телефон", "goto": "D1_Body", "effects": { "add": ["victim_phone"] } },
+        { "label": "Изъять часы", "goto": "D1_Body", "effects": { "add": ["victim_watch"] } },
+        { "label": "Назад", "goto": "D1_CrimeScene" }
+      ]
+    },
+
+    "D1_Trash": {
+      "title": "Поисковик улик",
+      "imgPrompt": "wet sidewalk and trash can at night, flashlight beam reveals glove, gritty urban",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D1_Trash.webp",
+      "text": "В урне – смятая перчатка, на тротуаре – брызги, ведущие к подъезду складов. На перчатке – едва заметный логотип фитнес-клуба.",
+      "choices": [
+        { "label": "Забрать перчатку как улику", "goto": "D1_Trash", "effects": { "add": ["suspect_glove"] } },
+        { "label": "Проследовать к складам", "goto": "D2_WarehouseHall" },
+        { "label": "Проследовать в фитнес-клуб", "goto": "D2_GymLobby" },
+        { "label": "Назад", "goto": "D1_CrimeScene" }
+      ]
+    },
+
+    "D1_Crate": {
+      "title": "Деревянный ящик",
+      "imgPrompt": "floating wooden crate near dock, hooked out of water, dripping wet, night scene",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D1_Crate.webp",
+      "text": "Внутри – окровавленный складной нож. Похоже на орудие. На рукояти – микрориска, возможно от брелока.",
+      "choices": [
+        { "label": "Изъять нож (орудие)", "goto": "D1_CrimeScene", "effects": { "add": ["murder_weapon"] } }
+      ]
+    },
+
+    "D1_CallRecords": {
+      "title": "Биллинги",
+      "imgPrompt": "police desk with printed call records, coffee mug, pen, late-night paperwork",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D1_CallRecords.webp",
+      "text": "Дежурный прислал распечатку: повторяющиеся вызовы на один и тот же номер, зарегистрированный на коворкинг неподалёку. Время – от 23:40 до 02:00.",
+      "choices": [
+        { "label": "Отметить адрес коворкинга", "goto": "D2_CoworkingLobby", "effects": { "add": ["coworking_address"] } },
+        { "label": "Назад", "goto": "D1_CrimeScene" }
+      ]
+    },
+
+    "D2_CoworkingLobby": {
+      "title": "Коворкинг: ресепшн",
+      "imgPrompt": "modern coworking lobby at night, sleepy receptionist, neon accents, security cameras",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_CoworkingLobby.webp",
+      "text": "Ночной администратор зевает. Говорит, что ночью были посетители из логистической компании и из фитнес-клуба. Комнаты бронируют по QR.",
+      "choices": [
+        { "label": "Попросить логи бронирований", "goto": "D2_AdminDesk" },
+        { "label": "Осмотреть комнату, возможно использовали для звонков", "goto": "D2_MeetingRoom" },
+        { "label": "Вернуться в отдел", "goto": "D1_Precinct" }
+      ]
+    },
+
+    "D2_AdminDesk": {
+      "title": "Ресепшн: логи",
+      "imgPrompt": "front desk computer with booking logs, dim corridor, keycard rack",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_AdminDesk.webp",
+      "text": "В логах повторяются бронирования на имя менеджера ‘Р’. Оплата наличными через терминал. Камеры в коридорах пишут на локальный сервер.",
+      "choices": [
+        { "label": "Запросить доступ к камерам (ордер)", "goto": "D2_AdminReq", "effects": { "add": ["warrant_requested"] } },
+        { "label": "Назад", "goto": "D2_CoworkingLobby" }
+      ]
+    },
+
+    "D2_AdminReq": {
+      "title": "Запрос ордера",
+      "imgPrompt": "city prosecutor phone call paperwork stack, late night desk, legal forms",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_AdminReq.webp",
+      "text": "Дежурный прокурор согласен, но требует более веских оснований. Нужны дополнительные улики или свидетель.",
+      "choices": [
+        { "label": "Вернуться за уликами", "goto": "D1_CrimeScene" },
+        { "label": "Поговорить с журналистом у набережной", "goto": "D4_Journalist" }
+      ]
+    },
+
+    "D2_MeetingRoom": {
+      "title": "Переговорная",
+      "imgPrompt": "small meeting room, whiteboard, cup crumbs, QR poster mark on wall",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_MeetingRoom.webp",
+      "text": "На столе крошки, на стене след от прислонённого плаката. Под столом – забытый бейдж логистической компании.",
+      "choices": [
+        { "label": "Забрать бейдж (улика)", "goto": "D2_MeetingRoom", "effects": { "add": ["logi_badge"] } },
+        { "label": "Назад", "goto": "D2_CoworkingLobby" }
+      ]
+    },
+
+    "D2_WarehouseHall": {
+      "title": "Склады на набережной",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_WarehouseHall.webp",
+      "text": "Подъезд закрыт на электронный замок. Сбоку – чёрный ход, мусорные контейнеры. На двери – панель с тремя слотами под ключ-карты (красная, синяя, зелёная).",
+      "choices": [
+        { "label": "Проверить чёрный ход", "goto": "D2_Backdoor" },
+        { "label": "Открыть главный вход (нужны три карты)", "goto": "D3_StorageInside", "require": { "hasAll": ["key_red", "key_blue", "key_green"] } },
+        { "label": "Вернуться на набережную", "goto": "D1_CrimeScene" },
+        { "label": "Прокурорский ордер (попробовать выбить)", "goto": "D2_ProsecutorOffice" }
+      ]
+    },
+
+    "D2_ApartmentHall": {
+      "title": "Подъезд дома жертвы",
+      "imgPrompt": "old apartment corridor with flickering light, stairwell, metal doors, noir",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_ApartmentHall.webp",
+      "text": "Третий этаж, двери с кодовыми замками. Соседи ворчат про ночной шум. Камера над подъездом выключена.",
+      "choices": [
+        { "label": "Постучать к соседу", "goto": "D2_Neighbor" },
+        { "label": "Открыть квартиру жертвы (по ордеру)", "goto": "D2_AptInside", "require": { "hasAny": ["warrant_requested"] } },
+        { "label": "Назад на набережную", "goto": "D1_CrimeScene" }
+      ]
+    },
+
+    "D2_Neighbor": {
+      "title": "Сосед по площадке",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_Neighbor.webp",
+      "text": "Сосед говорит о ссоре на лестнице вечером. Упоминает мужчину спортивного телосложения и запах хлорки.",
+      "choices": [
+        { "label": "Записать показания", "goto": "D2_ApartmentHall", "effects": { "add": ["neighbor_statement"] } },
+        { "label": "Сомнительное давление на свидетеля", "goto": "END_InternalAffairs" }
+      ]
+    },
+
+    "D2_AptInside": {
+      "title": "Квартира жертвы",
+      "imgPrompt": "cozy kitchen sink with bleach bottle, drawer half open with cards, evening light",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_AptInside.webp",
+      "text": "Акуратная квартира, кухонная раковина пахнет хлоркой. В ящике – абонемент в фитнес-клуб и визитка логистической компании.",
+      "choices": [
+        { "label": "Забрать абонемент (улика)", "goto": "D2_AptInside", "effects": { "add": ["gym_card"] } },
+        { "label": "Взять визитку", "goto": "D2_AptInside", "effects": { "add": ["logi_card"] } },
+        { "label": "На коворкинг", "goto": "D2_CoworkingLobby" },
+        { "label": "В фитнес-клуб", "goto": "D2_GymLobby" }
+      ]
+    },
+
+    "D2_GymLobby": {
+      "title": "Фитнес-клуб: вход",
+      "imgPrompt": "fitness club reception desk, neon lightning logo, turnstiles, evening",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_GymLobby.webp",
+      "text": "Администратор узнаёт перчатку на фото. Говорит, что тренер вспыльчив, а шкафчики часто ломают.",
+      "choices": [
+        { "label": "Попросить записи посещений", "goto": "D2_GymOffice" },
+        { "label": "Зал бокса (поговорить с тренером)", "goto": "D2_GymRing" },
+        { "label": "Назад", "goto": "D1_CrimeScene" }
+      ]
+    },
+
+    "D2_GymOffice": {
+      "title": "Офис клуба",
+      "imgPrompt": "gym manager office, shelf with attendance logs, small lightning logo photo",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_GymOffice.webp",
+      "text": "Журнал посещений указывает на встречи тренера с ‘Р’. На полке – фото с молнией (символ клуба).",
+      "choices": [
+        { "label": "Забрать копии журнала", "goto": "D2_GymOffice", "effects": { "add": ["gym_logs"] } },
+        { "label": "В зал бокса", "goto": "D2_GymRing" }
+      ]
+    },
+
+    "D2_GymRing": {
+      "title": "Зал бокса",
+      "imgPrompt": "boxing ring in gym, punching bags, moody dramatic lighting",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_GymRing.webp",
+      "text": "Тренер раздражён вопросами. Говорит о долгах и ‘нечестных бухгалтерах’. На руке ссадины.",
+      "choices": [
+        { "label": "Давить, вынуждая признание о самообороне", "goto": "END_SelfDefense", "require": { "hasAny": ["suspect_glove", "murder_weapon"] } },
+        { "label": "Пока уйти", "goto": "D2_GymLobby" }
+      ]
+    },
+
+    "D2_ProsecutorOffice": {
+      "title": "Прокуратура",
+      "imgPrompt": "prosecutor office interior, wood desk, law books, tense conversation",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_ProsecutorOffice.webp",
+      "text": "Дежурный прокурор рассматривает дело. Говорит о рисках ‘шумных’ дел. Намекает на давление сверху.",
+      "choices": [
+        { "label": "Добиваться ордера настойчиво", "goto": "D2_AdminReq", "effects": { "add": ["warrant_requested"] } },
+        { "label": "Согласиться ‘погодить’", "goto": "END_CoverUp" }
+      ]
+    },
+
+    "D2_Backdoor": {
+      "title": "Чёрный ход",
+      "imgPrompt": "warehouse backdoor at night, metal door slightly ajar, dumpsters, puddles",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_Backdoor.webp",
+      "text": "Дверь подпёрта изнутри. Через окно видно: охранник ушёл. Рядом вилка от замка и карта синий. На полу – следы будто от движимой стеллажной стенки.",
+      "choices": [
+        { "label": "Подобрать синюю карту", "goto": "D2_Backdoor", "effects": { "add": ["key_blue"] } },
+        { "label": "Искать механизм секретной стены", "goto": "D3_SecretPassage" },
+        { "label": "Назад", "goto": "D2_WarehouseHall" }
+      ]
+    },
+
+    "D3_SecretPassage": {
+      "title": "Секретный проход",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D3_SecretPassage.webp",
+      "text": "Сдвинув стеллажи, вы находите тайный проход в подсобку. Внутри – сервер-стойка и шкафчик с картами. На столе – разбитый телефон с наклейкой фитнес-клуба.",
+      "choices": [
+        { "label": "Взять красную и зелёную ключ-карты", "goto": "D3_SecretPassage", "effects": { "add": ["key_red", "key_green"] } },
+        { "label": "Подобрать разбитый телефон", "goto": "D3_SecretPassage", "effects": { "add": ["club_phone"] } },
+        { "label": "К главному входу складов", "goto": "D2_WarehouseHall" }
+      ]
+    },
+
+    "D3_StorageInside": {
+      "title": "Склад внутри",
+      "imgPrompt": "warehouse interior with shelves and boxes, cold lighting, industrial",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D3_StorageInside.webp",
+      "text": "Внутри пахнет маслом и металлом. На полке – коробки с документами, на стене – расписание отгрузок. В дальнем углу – шкафчик с логотипом фитнес-клуба.",
+      "choices": [
+        { "label": "Осмотреть документы", "goto": "D3_Docs" },
+        { "label": "Открыть шкафчик клуба (нужен отмычка или код)", "goto": "D3_ClubLocker" },
+        { "label": "В коридор склада", "goto": "D3_StorageCorridor" }
+      ]
+    },
+
+    "D3_Docs": {
+      "title": "Документы отгрузок",
+      "imgPrompt": "stack of shipping invoices on dusty shelf, red stamps, flashlight beam",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D3_Docs.webp",
+      "text": "Вы находите накладные на ночные рейсы с завышенной стоимостью услуг. Подписи – инициалы К.Л. и неизвестного менеджера ‘Р’.", 
+      "choices": [
+        { "label": "Забрать документы", "goto": "D3_StorageInside", "effects": { "add": ["fake_invoices"] } }
+      ]
+    },
+
+    "D3_ClubLocker": {
+      "title": "Шкафчик клуба",
+      "imgPrompt": "metal gym locker door with lightning scratch mark, electronic keypad",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D3_ClubLocker.webp",
+      "text": "На дверце – царапина в виде молнии. Похоже на рисунок на перчатке из урны. Замок электронный, можно попробовать подбор кода или воспользоваться подсказками.",
+      "choices": [
+        { "label": "Подобрать код (3 попытки)", "goto": "D3_CodePuzzle" },
+        { "label": "Искать подсказки (в телефонах/журналах)", "goto": "D3_StorageInside" }
+      ]
+    },
+
+    "D3_CodePuzzle": {
+      "title": "Кодовый замок",
+      "imgPrompt": "close-up of electronic keypad showing 0507, gym locker background",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D3_CodePuzzle.webp",
+      "text": "Нужен четырехзначный код. Подсказки: логотип молнии (⚡) встречается в постах клуба, любимая дата тренера — 0507, а также следы трёх цветов ключей на панели.",
+      "choices": [
+        { "label": "Ввести 0507", "goto": "D3_LockerOpen" },
+        { "label": "Отмена", "goto": "D3_ClubLocker" }
+      ]
+    },
+
+    "D3_LockerOpen": {
+      "title": "Шкафчик открыт",
+      "imgPrompt": "open gym locker with sports bag, cash bundle and spare phone inside",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D3_LockerOpen.webp",
+      "text": "Внутри – спортивная сумка с брелоком-молнией, пачка наличных, карта посещений и запасной смартфон.",
+      "choices": [
+        { "label": "Забрать брелок", "goto": "D3_LockerOpen", "effects": { "add": ["lightning_keyfob"] } },
+        { "label": "Забрать наличные (улика)", "goto": "D3_LockerOpen", "effects": { "add": ["cash_bundle"] } },
+        { "label": "Забрать смартфон", "goto": "D3_LockerOpen", "effects": { "add": ["locker_phone"] } },
+        { "label": "Выйти в складской коридор", "goto": "D3_StorageCorridor" }
+      ]
+    },
+
+    "D3_StorageCorridor": {
+      "title": "Коридор склада",
+      "imgPrompt": "long warehouse corridor, muddy footprints on floor, door labeled server room",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D3_StorageCorridor.webp",
+      "text": "Коридор ведёт к серверной и выходу. На полу – следы грязи, возможно свежие. Серверная требует код или физический ключ.",
+      "choices": [
+        { "label": "К серверной", "goto": "D3_ServerRoom" },
+        { "label": "Выйти наружу", "goto": "D2_WarehouseHall" }
+      ]
+    },
+
+    "D3_ServerRoom": {
+      "title": "Серверная",
+      "imgPrompt": "server room with blinking racks, NFC access panel glowing softly",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D3_ServerRoom.webp",
+      "text": "Дверь на замке. Рядом панель NFC. Возможно, подойдёт брелок с молнией.",
+      "choices": [
+        { "label": "Приложить брелок", "goto": "D3_ServerOpen", "require": { "hasAll": ["lightning_keyfob"] } },
+        { "label": "Назад", "goto": "D3_StorageCorridor" }
+      ]
+    },
+
+    "D3_ServerOpen": {
+      "title": "Серверная открыта",
+      "imgPrompt": "server rack terminal screen ready for two-factor phone connection",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D3_ServerOpen.webp",
+      "text": "Внутри серверы и монитор. Есть порт для подключения телефона как ключа двухфакторной авторизации.",
+      "choices": [
+        { "label": "Подключить телефон клубный (если найден)", "goto": "D2_PhoneUnlocked", "require": { "hasAny": ["club_phone", "locker_phone"] } },
+        { "label": "Назад", "goto": "D3_StorageCorridor" }
+      ]
+    },
+
+    "D2_PhoneUnlocked": {
+      "title": "Вскрытые сообщения",
+      "imgPrompt": "smartphone messages chat log on desk, evidence bags nearby, dim light",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D2_PhoneUnlocked.webp",
+      "text": "На телефоне чаты с менеджером ‘Р’. Договоры о фиктивных накладных. Координация вывоза наличных через склады. Есть фото ножа и брелока.",
+      "choices": [
+        { "label": "Сохранить переписку", "goto": "D3_ServerOpen", "effects": { "add": ["chat_logs"] } },
+        { "label": "Назад", "goto": "D3_ServerOpen" }
+      ]
+    },
+
+    "D4_Confrontation": {
+      "title": "Очная ставка",
+      "imgPrompt": "interrogation room with three suspects and lead detective, tense atmosphere",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D4_Confrontation.webp",
+      "text": "Вы собираете фигурантов: тренер фитнес-клуба, менеджер ‘Р’ из логистики, и охранник склада. Доказательства у вас на руках.",
+      "choices": [
+        { "label": "Обвинить менеджера ‘Р’ (мотив деньги, фиктивные накладные)", "goto": "D4_AccuseManager", "require": { "hasAll": ["fake_invoices", "chat_logs"] } },
+        { "label": "Обвинить тренера (брелок, перчатка, связь с клубом)", "goto": "D4_AccuseTrainer", "require": { "hasAll": ["suspect_glove", "lightning_keyfob"] } },
+        { "label": "Обвинить охранника (доступ к складам, перемещения ночью)", "goto": "D4_AccuseGuard", "require": { "hasAny": ["key_blue", "key_red", "key_green"] } },
+        { "label": "Провести оперативную комбинацию (подставная сделка)", "goto": "D5_UndercoverPlan" },
+        { "label": "Поговорить с журналистом", "goto": "D4_Journalist" },
+        { "label": "Задержать кого-то ради отчёта (ошибочный арест)", "goto": "END_WrongfulArrest" },
+        { "label": "Отложить: рискуем получить ‘глухарь’", "goto": "END_ColdCase" },
+        { "label": "Не спешить, собрать ещё улик", "goto": "D3_StorageInside" }
+      ]
+    },
+
+    "D4_Journalist": {
+      "title": "Журналист у набережной",
+      "imgPrompt": "reporter at riverside with notepad and phone, police tape in background, night scene",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D4_Journalist.webp",
+      "text": "Журналистка слышала ночью спор у складов. Предлагает эксклюзив в обмен на инсайд. Угрожает публикацией утечки, если её проигнорировать.",
+      "choices": [
+        { "label": "Слить часть информации (риск утечки)", "goto": "END_PublicLeak" },
+        { "label": "Отказать и пригрозить законом (может обострить)", "goto": "D4_Confrontation" },
+        { "label": "Сделать её информатором (под запись)", "goto": "D5_UndercoverPlan", "effects": { "add": ["journalist_informer"] } },
+        { "label": "Информатор исчезает после угроз", "goto": "END_MafiaRetaliation", "require": { "hasAll": ["journalist_informer"] } }
+      ]
+    },
+
+    "D5_UndercoverPlan": {
+      "title": "Оперативная комбинация",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D5_UndercoverPlan.webp",
+      "text": "План: под видом курьера вывести на сделку менеджера ‘Р’ и тренера. Нужны: поддельная накладная и место встречи. Можно подключить журналистку как приманку.",
+      "choices": [
+        { "label": "Подготовить поддельные накладные", "goto": "D5_PrepDocs", "require": { "hasAll": ["fake_invoices"] } },
+        { "label": "Использовать журналистку как приманку", "goto": "D5_Bait", "require": { "hasAll": ["journalist_informer"] } },
+        { "label": "Назад к очной ставке", "goto": "D4_Confrontation" }
+      ]
+    },
+
+    "D5_PrepDocs": {
+      "title": "Подготовка документов",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D5_PrepDocs.webp",
+      "text": "С помощью найденных шаблонов вы готовите правдоподобные накладные на ночной вывоз. Осталось выбрать место встречи.",
+      "choices": [
+        { "label": "Назначить встречу у складов (опасно)", "goto": "D5_UndercoverStart", "effects": { "add": ["sting_at_warehouse"] } },
+        { "label": "Назначить встречу у коворкинга (люди, камеры)", "goto": "D5_UndercoverStart", "effects": { "add": ["sting_at_coworking"] } },
+        { "label": "Передумать", "goto": "D5_UndercoverPlan" }
+      ]
+    },
+
+    "D5_Bait": {
+      "title": "Приманка",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D5_Bait.webp",
+      "text": "Журналистка соглашается сыграть роль агрессивного блогера, чтобы вынудить ‘Р’ действовать неосторожно. Рисковано, но может сработать.",
+      "choices": [
+        { "label": "Продолжить операцию", "goto": "D5_UndercoverStart", "effects": { "add": ["bait_active"] } },
+        { "label": "Отказаться", "goto": "D5_UndercoverPlan" }
+      ]
+    },
+
+    "D5_UndercoverStart": {
+      "title": "Начало операции",
+      "imgPrompt": "unmarked car stakeout at night, rain on windshield, city lights bokeh",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D5_UndercoverStart.webp",
+      "text": "Вы занимаете позиции. Если всё пойдёт по плану, получите признание и цепочку связей.",
+      "choices": [
+        { "label": "Провести задержание по сигналу", "goto": "D5_Outcome" },
+        { "label": "Слишком рискованно (отмена)", "goto": "END_ColdCase" }
+      ]
+    },
+
+    "D5_Outcome": {
+      "title": "Итог операции",
+      "imgPrompt": "nighttime meetup in alley near docks, exchange of cash, hidden camera angle",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D5_Outcome.webp",
+      "text": "Встреча начинается. Менеджер ‘Р’ прибыл с тренером. Охранник замечен в переулке. Ситуация накаляется.",
+      "choices": [
+        { "label": "Брать всех, когда пойдут расчёты", "goto": "END_ExposeRing", "require": { "hasAny": ["sting_at_coworking", "bait_active"] } },
+        { "label": "Дождаться и перехватить одного ‘Р’", "goto": "END_Manager" },
+        { "label": "Неудача: засветились (драка)", "goto": "END_BadInjury" },
+        { "label": "Подключается ‘корпоративная броня’ (адвокаты)", "goto": "END_CorporateShield", "require": { "hasAny": ["logi_badge", "logi_card"] } },
+        { "label": "Подозрительная наводка от анонима", "goto": "END_AnonymousTrap" },
+        { "label": "Ответ союзников тренера (эскалация)", "goto": "END_MafiaRetaliation", "require": { "hasAll": ["bait_active"] } }
+      ]
+    },
+
+    "D4_AccuseManager": {
+      "title": "Менеджер уличён",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D4_AccuseManager.webp",
+      "text": "Менеджер ‘Р’ нервничает, но ломается после демонстрации переписки и накладных. Он утверждает, что удар нанёс не он, а тренер, сорвавшийся после ссоры из-за дележа.",
+      "choices": [
+        { "label": "Продолжить", "goto": "END_Manager" }
+      ]
+    },
+
+    "D4_AccuseTrainer": {
+      "title": "Тренер уличён",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D4_AccuseTrainer.webp",
+      "text": "Тренер видит улику – перчатка с логотипом и брелок с ‘молнией’. На рукояти ножа – риски от такого брелока. Он признаётся: ‘Поссорились, толкнул, испугался’.",
+      "choices": [
+        { "label": "Продолжить", "goto": "END_Trainer" }
+      ]
+    },
+
+    "D4_AccuseGuard": {
+      "title": "Охранник под подозрением",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/D4_AccuseGuard.webp",
+      "text": "Охранник отбивается: «Я только закрывал склад, увидел тело уже после». Без прямых улик обвинение слабо. Нужны дополнительные доказательства.",
+      "choices": [
+        { "label": "Надавить и выбить признание (сомнительно)", "goto": "END_GuardFallGuy" },
+        { "label": "Вернуться собирать улики", "goto": "D3_StorageInside" }
+      ]
+    },
+
+    "END_Manager": {
+      "title": "Дело раскрыто: менеджер",
+      "imgPrompt": "manager in suit handcuffed, police station backdrop, subdued lighting",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/END_Manager.webp",
+      "text": "Собранные доказательства убеждают прокурора. Менеджер ‘Р’ признаёт координацию схемы и участие в сокрытии улики. Фигуранты задержаны.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_Trainer": {
+      "title": "Дело раскрыто: тренер",
+      "imgPrompt": "boxing trainer subdued by police near gym, remorseful expression, noir",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/END_Trainer.webp",
+      "text": "Тренер признаётся в роковом столкновении у набережной. Менеджер проходил по делу как соучастник в махинациях и сокрытии.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_ColdCase": {
+      "title": "Глухарь",
+      "imgPrompt": "dusty shelf with cold case boxes, clock ticking, moody shadows",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/END_ColdCase.webp",
+      "text": "Сроки поджимают, улик недостаточно. Дело уходит в разряд нераскрытых. В городе обсуждают некомпетентность отдела.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_PublicLeak": {
+      "title": "Утечка в СМИ",
+      "imgPrompt": "news website headline about police leak, smartphone screen with breaking news",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/END_PublicLeak.webp",
+      "text": "Журналистка публикует материал. Общество возмущено, но часть улик скомпрометирована. Фигуранты затаились. Расследование осложнилось.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_ExposeRing": {
+      "title": "Разоблачение схемы",
+      "imgPrompt": "evidence board connected with strings, money exchange captured on camera, press conference",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/END_ExposeRing.webp",
+      "text": "Операция прошла успешно. Зафиксированы передачи денег и признательные разговоры. Вы раскрыли не только убийство, но и финансовую схему.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_BadInjury": {
+      "title": "Провал операции",
+      "imgPrompt": "chaotic alley scuffle at night, flashing police lights, medic treating wounded officer",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/END_BadInjury.webp",
+      "text": "Стычка переходит в драку. Подозреваемые уходят, один сотрудник ранен. Дело временно приостанавливается.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_CoverUp": {
+      "title": "Замято",
+      "imgPrompt": "stack of sealed case files in archive room, dim light, closed case stamp",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/END_CoverUp.webp",
+      "text": "Давление сверху сработало. Материалы уезжают в архив, фигуранты уходят от ответственности. В отделе неловкое молчание.",
+      "end": true,
+      "choices": []
+    },
+
+    "END_GuardFallGuy": {
+      "title": "Козёл отпущения",
+      "imgPrompt": "security guard in small interrogation room signing confession under pressure",
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/DocksideShadows/END_GuardFallGuy.webp",
+      "text": "Охранник подписывает признание под давлением. Через неделю адвокат добивается отмены. Репутация отдела под ударом.",
+      "end": true,
+      "choices": []
+    }
+  }
+}
