@@ -9,7 +9,8 @@
       "choices": [
         { "label": "Проверить статус систем", "goto": "A1_Status", "effects": { "add": ["briefed"] } },
         { "label": "Связаться с ИИ \"ИРИС\"", "goto": "A1_ContactAI" },
-        { "label": "Покинуть мостик", "goto": "A1_Corridor" }
+        { "label": "Покинуть мостик", "goto": "A1_Corridor" },
+        { "label": "К штурманскому режиму", "goto": "A4_NavBridge", "require": { "hasAll": ["reactor_fixed", "engine_fixed"] } }
       ]
     },
 
@@ -108,7 +109,7 @@
       "title": "Впрыск охлаждения",
       "text": "Вы подключаете топливную ячейку как временный охладитель. Температура снижается, доступ к регулятору открыт.",
       "choices": [
-        { "label": "К регулятору", "goto": "A2_Regulator" }
+        { "label": "К регулятору", "goto": "A2_Regulator", "effects": { "remove": ["fuel_cell"] } }
       ]
     },
 
@@ -125,6 +126,7 @@
       "text": "Регулятор перегорел. Рядом валяется повреждённый датакор. Можно попробовать его перепрошить.",
       "choices": [
         { "label": "Перепрошить датакор", "goto": "A2_FlashCore", "effects": { "add": ["datacore"] } },
+        { "label": "Установить модуль реактора", "goto": "A2_Stable", "require": { "hasAll": ["reactor_key"] }, "effects": { "add": ["reactor_fixed"] } },
         { "label": "Вернуться позже", "goto": "A2_Engineering" }
       ]
     },
@@ -189,6 +191,7 @@
       "choices": [
         { "label": "Искать экипаж", "goto": "A3_SearchCrew" },
         { "label": "К шлюзу, EVA", "goto": "A3_EVA", "require": { "hasAll": ["spacesuit"] } },
+        { "label": "Подготовка к выходу", "goto": "A4_FinalPrep" },
         { "label": "На мостик", "goto": "A1_Bridge" }
       ]
     },
@@ -237,7 +240,7 @@
       "title": "Капсула",
       "text": "Вы вскрываете капсулу и находите пилота без сознания. Медсканер показывает шанс реанимации.",
       "choices": [
-        { "label": "Использовать аптечку", "goto": "A3_PilotAwake", "require": { "hasAll": ["medkit"] } },
+        { "label": "Использовать аптечку", "goto": "A3_PilotAwake", "require": { "hasAll": ["medkit"] }, "effects": { "remove": ["medkit"] } },
         { "label": "Оставить метку ИРИС для эвакуации", "goto": "A3_Lab", "effects": { "add": ["crew_marked"] } }
       ]
     },
@@ -254,7 +257,7 @@
       "title": "Сканирование артефакта",
       "text": "Артефакт излучает паттерны, похожие на навигационные метки. С транслатором удаётся выделить ключевые символы.",
       "choices": [
-        { "label": "Декодировать (нужен транслатор)", "goto": "A3_Decode", "require": { "hasAll": ["translator"] } },
+        { "label": "Декодировать (нужен транслатор и артефакт)", "goto": "A3_Decode", "require": { "hasAll": ["translator", "alien_artifact"] } },
         { "label": "Забрать артефакт", "goto": "A3_Lab", "effects": { "add": ["alien_artifact"] } }
       ]
     },
