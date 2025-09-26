@@ -1,0 +1,356 @@
+{
+  "start": "A1_Bridge",
+  "nodes": {
+    "A1_Bridge": {
+      "title": "Капитанский мостик",
+      "image": "",
+      "imgPrompt": "dimly lit starship bridge, holographic displays, starfield outside, cinematic, sci-fi",
+      "text": "Вы приходите в себя на капитанском мостике грузового корабля \"Орион-V\". Системы мерцают после мощного удара. ИИ корабля молчит. В журнале последняя запись: ‘внезапный грави-шторм у границ Туманности Ят'.",
+      "choices": [
+        { "label": "Проверить статус систем", "goto": "A1_Status", "effects": { "add": ["briefed"] } },
+        { "label": "Связаться с ИИ \"ИРИС\"", "goto": "A1_ContactAI" },
+        { "label": "Покинуть мостик", "goto": "A1_Corridor" },
+        { "label": "К штурманскому режиму", "goto": "A4_NavBridge", "require": { "hasAll": ["reactor_fixed", "engine_fixed"] } }
+      ]
+    },
+
+    "A1_Status": {
+      "title": "Диагностика корабля",
+      "text": "Двигатели: частично выведены из строя. Реактор: перегрет, активирована защита. Жизненно важные системы на резерве. Отсутствуют двое членов экипажа. Доступ к медотсеку и складу ограничен.",
+      "choices": [
+        { "label": "К ИИ \"ИРИС\"", "goto": "A1_ContactAI" },
+        { "label": "В коридор", "goto": "A1_Corridor" }
+      ]
+    },
+
+    "A1_ContactAI": {
+      "title": "Пробуждение ИРИС",
+      "imgPrompt": "starship AI core console flickering, cool blue UI",
+      "text": "После перезапуска коммуникационного блока ИРИС отвечает искажённым голосом: \"Диагностика... Двигатели повреждены. Реактор нестабилен. Внешние сигнатуры не соответствуют известным. Рекомендация: восстановить реактор и двигатели, найти экипаж.\"",
+      "choices": [
+        { "label": "Запросить план восстановления", "goto": "A1_AIPlan", "effects": { "add": ["spoke_with_ai"] } },
+        { "label": "Вернуться на мостик", "goto": "A1_Bridge" }
+      ]
+    },
+
+    "A1_AIPlan": {
+      "title": "План восстановления",
+      "text": "ИРИС: \"Шаги: 1) Стабилизировать реактор (инж. палуба). 2) Отремонтировать один из двигателей (мех. отсек). 3) Найти пропавших. 4) Покинуть опасную зону. Дополнительно: исследовать неизвестные сигнатуры.\"",
+      "choices": [
+        { "label": "В коридор", "goto": "A1_Corridor" },
+        { "label": "Открыть доступы на складах", "goto": "A1_AccessGranted", "require": { "hasAll": ["spoke_with_ai"] } }
+      ]
+    },
+
+    "A1_AccessGranted": {
+      "title": "Доступ расширен",
+      "text": "ИРИС: \"Открыл временные пропуска для склада и медотсека. Используйте разумно.\"",
+      "choices": [
+        { "label": "В коридор", "goto": "A1_Corridor", "effects": { "add": ["access_card"] } }
+      ]
+    },
+
+    "A1_Corridor": {
+      "title": "Главный коридор",
+      "imgPrompt": "dark starship corridor with emergency lights, atmospheric",
+      "text": "Коридор с аварийным освещением ведёт: к инженерной палубе, мехотсеку, складу и медотсеку. На полу следы термических ожогов.",
+      "choices": [
+        { "label": "Инженерная палуба (реактор)", "goto": "A2_Engineering" },
+        { "label": "Механический отсек (двигатель)", "goto": "A2_EngineBay" },
+        { "label": "Склад", "goto": "A1_Storage", "require": { "hasAny": ["access_card"] } },
+        { "label": "Медотсек", "goto": "A1_Medbay", "require": { "hasAny": ["access_card"] } },
+        { "label": "К шлюзу", "goto": "A1_Airlock" },
+        { "label": "Назад на мостик", "goto": "A1_Bridge" }
+      ]
+    },
+
+    "A1_Storage": {
+      "title": "Склад снабжения",
+      "text": "На полках: плазморез, универсальный модуль маскировки, контейнер с топливными ячейками, пустые контейнеры.",
+      "choices": [
+        { "label": "Взять плазморез", "goto": "A1_Storage", "effects": { "add": ["plasma_cutter"] } },
+        { "label": "Взять маскировку", "goto": "A1_Storage", "effects": { "add": ["stealth_module"] } },
+        { "label": "Взять топливную ячейку", "goto": "A1_Storage", "effects": { "add": ["fuel_cell"] } },
+        { "label": "В коридор", "goto": "A1_Corridor" }
+      ]
+    },
+
+    "A1_Medbay": {
+      "title": "Медотсек",
+      "text": "Медсканер выдает: лёгкие ожоги, усталость. На столе аптечки и переносной биосканер.",
+      "choices": [
+        { "label": "Взять аптечку", "goto": "A1_Medbay", "effects": { "add": ["medkit"] } },
+        { "label": "Взять биосканер", "goto": "A1_Medbay", "effects": { "add": ["bioscanner"] } },
+        { "label": "В коридор", "goto": "A1_Corridor" }
+      ]
+    },
+
+    "A1_Airlock": {
+      "title": "Шлюзовой отсек",
+      "text": "За иллюминатором — неподвижная пелена Туманности Ят. Скафандр закреплён на стенде.",
+      "choices": [
+        { "label": "Взять скафандр", "goto": "A1_Airlock", "effects": { "add": ["spacesuit"] } },
+        { "label": "В коридор", "goto": "A1_Corridor" }
+      ]
+    },
+
+    "A2_Engineering": {
+      "title": "Инженерная палуба",
+      "imgPrompt": "reactor core chamber, glowing coils, sparks, sci-fi industrial",
+      "text": "Реактор в защитном режиме. Для стабилизации потребуется охладить контур и заменить повреждённый регулятор потока.",
+      "choices": [
+        { "label": "Охладить контур", "goto": "A2_Coolant", "require": { "hasAny": ["fuel_cell"] } },
+        { "label": "Снять защитный кожух", "goto": "A2_Casing", "require": { "hasAny": ["plasma_cutter"] } },
+        { "label": "Назад в коридор", "goto": "A1_Corridor" }
+      ]
+    },
+
+    "A2_Coolant": {
+      "title": "Впрыск охлаждения",
+      "text": "Вы подключаете топливную ячейку как временный охладитель. Температура снижается, доступ к регулятору открыт.",
+      "choices": [
+        { "label": "К регулятору", "goto": "A2_Regulator", "effects": { "remove": ["fuel_cell"] } }
+      ]
+    },
+
+    "A2_Casing": {
+      "title": "Снятие кожуха",
+      "text": "Плазморезом вы аккуратно снимаете защитный кожух. Доступ к регулятору открыт.",
+      "choices": [
+        { "label": "К регулятору", "goto": "A2_Regulator" }
+      ]
+    },
+
+    "A2_Regulator": {
+      "title": "Регулятор потока",
+      "text": "Регулятор перегорел. Рядом валяется повреждённый датакор. Можно попробовать его перепрошить.",
+      "choices": [
+        { "label": "Перепрошить датакор", "goto": "A2_FlashCore", "effects": { "add": ["datacore"] } },
+        { "label": "Установить модуль реактора", "goto": "A2_Stable", "require": { "hasAll": ["reactor_key"] }, "effects": { "add": ["reactor_fixed"] } },
+        { "label": "Вернуться позже", "goto": "A2_Engineering" }
+      ]
+    },
+
+    "A2_FlashCore": {
+      "title": "Перепрошивка",
+      "text": "Вы используете консоль ИРИС, чтобы залить патч. Реактор переходит в стабильный режим.",
+      "choices": [
+        { "label": "Продолжить", "goto": "A2_Stable", "effects": { "add": ["reactor_fixed"] } }
+      ]
+    },
+
+    "A2_Stable": {
+      "title": "Реактор стабилен",
+      "text": "Мощность возросла. ИРИС сообщает: \"Доступны дополнительные отсеки.\"",
+      "choices": [
+        { "label": "К мехотсеку", "goto": "A2_EngineBay" },
+        { "label": "В коридор", "goto": "A1_Corridor" }
+      ]
+    },
+
+    "A2_EngineBay": {
+      "title": "Механический отсек",
+      "imgPrompt": "starship engine room, massive thrusters, tools, sparks",
+      "text": "Один двигатель частично разрушен. Можно восстановить второй для манёвра. Нужен доступ к криоштопорам и замена блока синхронизации.",
+      "choices": [
+        { "label": "Осмотреть криоштопора", "goto": "A2_CryoClamps" },
+        { "label": "Заменить блок синхронизации", "goto": "A2_SyncBlock", "require": { "hasAny": ["datacore"] } },
+        { "label": "Назад в коридор", "goto": "A1_Corridor" }
+      ]
+    },
+
+    "A2_CryoClamps": {
+      "title": "Криоштопора",
+      "text": "Механизм закис. Потребуется маскировочный модуль для безопасного доступа через активные датчики или биосканер для отключения протокола.",
+      "choices": [
+        { "label": "Использовать маскировку", "goto": "A2_ClampBypass", "require": { "hasAll": ["stealth_module"] } },
+        { "label": "Отключить протокол биосканером", "goto": "A2_ClampBypass", "require": { "hasAll": ["bioscanner"] } },
+        { "label": "Назад", "goto": "A2_EngineBay" }
+      ]
+    },
+
+    "A2_ClampBypass": {
+      "title": "Обход защиты",
+      "text": "Доступ получен. Двигатель фиксирован, можно работать с синхронизацией.",
+      "choices": [
+        { "label": "К блоку синхронизации", "goto": "A2_SyncBlock" }
+      ]
+    },
+
+    "A2_SyncBlock": {
+      "title": "Блок синхронизации",
+      "text": "Вы вносите патч из перепрошитого датакора. Двигатель переходит в режим готовности.",
+      "choices": [
+        { "label": "Продолжить", "goto": "A2_EngineReady", "effects": { "add": ["engine_fixed"] } }
+      ]
+    },
+
+    "A2_EngineReady": {
+      "title": "Двигатель готов",
+      "text": "По данным ИРИС, остались пропавшие члены экипажа и неизвестные сигнатуры снаружи. Теперь корабль может маневрировать.",
+      "choices": [
+        { "label": "Искать экипаж", "goto": "A3_SearchCrew" },
+        { "label": "К шлюзу, EVA", "goto": "A3_EVA", "require": { "hasAll": ["spacesuit"] } },
+        { "label": "Подготовка к выходу", "goto": "A4_FinalPrep" },
+        { "label": "На мостик", "goto": "A1_Bridge" }
+      ]
+    },
+
+    "A3_SearchCrew": {
+      "title": "Поиск экипажа",
+      "text": "Сигналы браслетов ведут к каютам и к научному модулю.",
+      "choices": [
+        { "label": "К каютам", "goto": "A3_Cabins" },
+        { "label": "К научному модулю", "goto": "A3_Lab" },
+        { "label": "Назад", "goto": "A2_EngineReady" }
+      ]
+    },
+
+    "A3_Cabins": {
+      "title": "Каютный сектор",
+      "text": "Одна каюта вскрыта. На столе — записка: ‘Если вы это читаете, идите в лабораторию. – С.Л.’",
+      "choices": [
+        { "label": "Собрать личные вещи (транслатор)", "goto": "A3_Cabins", "effects": { "add": ["translator"] } },
+        { "label": "К лаборатории", "goto": "A3_Lab" },
+        { "label": "Назад", "goto": "A3_SearchCrew" }
+      ]
+    },
+
+    "A3_Lab": {
+      "title": "Научный модуль",
+      "imgPrompt": "sci-fi lab, alien artifact on table, holographic scans",
+      "text": "В лаборатории – запертая капсула и подозрительный артефакт. Логи указывают на неизвестный сигнал из Туманности.",
+      "choices": [
+        { "label": "Открыть капсулу (плазморез)", "goto": "A3_Capsule", "require": { "hasAll": ["plasma_cutter"] } },
+        { "label": "Сканировать артефакт", "goto": "A3_ArtifactScan", "require": { "hasAny": ["bioscanner"] } },
+        { "label": "К журналам", "goto": "A3_LabLogs" },
+        { "label": "Назад", "goto": "A3_SearchCrew" }
+      ]
+    },
+
+    "A3_LabLogs": {
+      "title": "Журналы исследований",
+      "text": "Учёный Лян: \"Артефакт реагирует на радиошумы Туманности. Возможно, ключ к навигации.\" Другой лог: \"Пилот ещё жив. Но в крио.\"",
+      "choices": [
+        { "label": "Вернуться", "goto": "A3_Lab" }
+      ]
+    },
+
+    "A3_Capsule": {
+      "title": "Капсула",
+      "text": "Вы вскрываете капсулу и находите пилота без сознания. Медсканер показывает шанс реанимации.",
+      "choices": [
+        { "label": "Использовать аптечку", "goto": "A3_PilotAwake", "require": { "hasAll": ["medkit"] }, "effects": { "remove": ["medkit"] } },
+        { "label": "Оставить метку ИРИС для эвакуации", "goto": "A3_Lab", "effects": { "add": ["crew_marked"] } }
+      ]
+    },
+
+    "A3_PilotAwake": {
+      "title": "Пилот приходит в себя",
+      "text": "Пилот шепчет: \"Видел свет за бортом. Не наш. Но он показывал путь\". Он сможет помочь с навигацией, если добраться до мостика.",
+      "choices": [
+        { "label": "Пометить как спасён", "goto": "A3_Lab", "effects": { "add": ["crew_rescued"] } }
+      ]
+    },
+
+    "A3_ArtifactScan": {
+      "title": "Сканирование артефакта",
+      "text": "Артефакт излучает паттерны, похожие на навигационные метки. С транслатором удаётся выделить ключевые символы.",
+      "choices": [
+        { "label": "Декодировать (нужен транслатор и артефакт)", "goto": "A3_Decode", "require": { "hasAll": ["translator", "alien_artifact"] } },
+        { "label": "Забрать артефакт", "goto": "A3_Lab", "effects": { "add": ["alien_artifact"] } }
+      ]
+    },
+
+    "A3_Decode": {
+      "title": "Декодирование",
+      "text": "Вы понимаете: артефакт — карта коридоров Туманности. Он указывает безопасный путь при условии стабильной тяги.",
+      "choices": [
+        { "label": "Отметить в ИРИС", "goto": "A3_Lab", "effects": { "add": ["artifact_decoded"] } }
+      ]
+    },
+
+    "A3_EVA": {
+      "title": "Выход в открытый космос",
+      "imgPrompt": "astronaut EVA near starship, nebula, eerie glow",
+      "text": "Снаружи корабля вы замечаете светящиеся нити — возможно, следы неизвестной формы жизни. Один из контейнеров снаружи застрял у обшивки.",
+      "choices": [
+        { "label": "Осмотреть контейнер", "goto": "A3_EVAContainer" },
+        { "label": "Сканировать нити", "goto": "A3_EVAFibers", "require": { "hasAll": ["bioscanner"] } },
+        { "label": "Назад внутрь", "goto": "A2_EngineReady" }
+      ]
+    },
+
+    "A3_EVAContainer": {
+      "title": "Контейнер на обшивке",
+      "text": "Внутри запасной модуль реактора. Это может пригодиться для тонкой настройки.",
+      "choices": [
+        { "label": "Забрать модуль", "goto": "A2_Engineering", "effects": { "add": ["reactor_key"] } },
+        { "label": "Вернуться в шлюз", "goto": "A2_EngineReady" }
+      ]
+    },
+
+    "A3_EVAFibers": {
+      "title": "Неизвестные нити",
+      "text": "Биосканер показывает: нити реагируют на электромагнитные импульсы и не опасны при низком излучении. Возможно, можно использовать их как ориентир.",
+      "choices": [
+        { "label": "Записать паттерн", "goto": "A2_EngineReady", "effects": { "add": ["eva_pattern"] } }
+      ]
+    },
+
+    "A4_FinalPrep": {
+      "title": "Подготовка к выходу из Туманности",
+      "text": "ИРИС: \"Путь можно проложить. Требования: стабильный реактор, рабочий двигатель и навигационный ключ (артефакт или EVA-паттерн). Экипаж – по возможности спасён.\"",
+      "choices": [
+        { "label": "На мостик для прокладки курса", "goto": "A4_NavBridge", "require": { "hasAll": ["reactor_fixed", "engine_fixed"] } },
+        { "label": "Вернуться за подготовкой", "goto": "A2_EngineReady" }
+      ]
+    },
+
+    "A4_NavBridge": {
+      "title": "Штурманский режим",
+      "text": "Вы открываете штурманский интерфейс. Доступны параметры курса. Нужен ключ навигации.",
+      "choices": [
+        { "label": "Использовать артефакт (декодирован)", "goto": "END_Artifact", "require": { "hasAll": ["artifact_decoded", "reactor_fixed", "engine_fixed"] } },
+        { "label": "Использовать EVA-паттерн", "goto": "END_EVA", "require": { "hasAll": ["eva_pattern", "reactor_fixed", "engine_fixed"] } },
+        { "label": "Рискнуть без ключа", "goto": "END_BadNoKey", "require": { "hasAll": ["reactor_fixed", "engine_fixed"] } }
+      ]
+    },
+
+    "END_Artifact": {
+      "title": "Выход по карте артефакта",
+      "text": "Корабль мягко скользит вдоль безопасного коридора. Свет Туманности замирает. Если пилот спасён, он благодарит вас, обещая новую миссию после дока.",
+      "choices": [
+        { "label": "Финал: спасён пилот (улучшенный)", "goto": "END_GoodCrew", "require": { "hasAll": ["crew_rescued"] } },
+        { "label": "Финал: стандартный выход", "goto": "END_GoodStandard" }
+      ]
+    },
+
+    "END_EVA": {
+      "title": "Выход по EVA-паттерну",
+      "text": "Используя записанные сигнатуры, вы ведёте корабль между \"нитями\". Путь сложнее, но вы справляетесь.",
+      "choices": [
+        { "label": "Финал: спасён пилот (улучшенный)", "goto": "END_GoodCrew", "require": { "hasAll": ["crew_rescued"] } },
+        { "label": "Финал: стандартный выход", "goto": "END_GoodStandard" }
+      ]
+    },
+
+    "END_BadNoKey": {
+      "title": "Рискованная попытка",
+      "text": "Без надёжного ключа навигации грави-штормы рвут маршрут. Корабль получает критические повреждения и теряет управление...",
+      "choices": []
+    },
+
+    "END_GoodCrew": {
+      "title": "Свобода и команда",
+      "text": "Вы выходите из Туманности. Пилот благодарит: \"Я должен тебе жизнью.\" На горизонте маячит станция ремонта. ИРИС предлагает связаться с научным консорциумом по поводу артефакта.",
+      "choices": []
+    },
+
+    "END_GoodStandard": {
+      "title": "Свобода",
+      "text": "Покидая Туманность, вы чувствуете, как напряжение уходит. Впереди — новые маршруты и вопросы: кто оставил карту в артефакте?",
+      "choices": []
+    }
+  }
+}
