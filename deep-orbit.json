@@ -1,5 +1,15 @@
 {
   "start": "A1_Bridge",
+  "meta": {
+    "title": { "ru": "Deep Orbit", "en": "Deep Orbit" },
+    "achievements": [
+      { "code": "start", "title": "Начало квеста", "when": { "type": "quest_started" } },
+      { "code": "first_scene", "title": "Первые шаги", "when": { "type": "reach_scene", "sceneId": "A1_Corridor" } },
+      { "code": "collect_all", "title": "Коллекционер", "when": { "type": "have_items_all", "items": ["plasma_cutter", "bioscanner", "translator"] } },
+      { "code": "secret_branch", "title": "Секретная развилка", "when": { "type": "reach_scene", "sceneId": "A3_EVA" } },
+      { "code": "finish", "title": "Финал миссии", "when": { "type": "quest_completed" } }
+    ]
+  },
   "nodes": {
     "A1_Bridge": {
       "title": "Капитанский мостик",
@@ -338,18 +348,21 @@
     "END_BadNoKey": {
       "title": "Рискованная попытка",
       "text": "Без надёжного ключа навигации грави-штормы рвут маршрут. Корабль получает критические повреждения и теряет управление...",
+      "end": true,
       "choices": []
     },
 
     "END_GoodCrew": {
       "title": "Свобода и команда",
       "text": "Вы выходите из Туманности. Пилот благодарит: \"Я должен тебе жизнью.\" На горизонте маячит станция ремонта. ИРИС предлагает связаться с научным консорциумом по поводу артефакта.",
+      "end": true,
       "choices": []
     },
 
     "END_GoodStandard": {
       "title": "Свобода",
       "text": "Покидая Туманность, вы чувствуете, как напряжение уходит. Впереди — новые маршруты и вопросы: кто оставил карту в артефакте?",
+      "end": true,
       "choices": []
     }
   }
