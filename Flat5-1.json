@@ -1,0 +1,755 @@
+{
+  "start": "hall",
+  "nodes": {
+    "hall": {
+      "title": "Тёмный коридор",
+      "text": [
+        "Ты просыпаешься на холодном полу. Лампочка мигает. Тишина, кроме собственного дыхания.",
+        "В нос ударяет сырость. На стене — выцарапанные слова: \"НЕ СМОТРИ НАЗАД\"."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/hall.webp",
+      "choices": [
+        { "label": "Оглядеться", "goto": "hall_look", "effects": {"add": ["hall_seen"]} },
+        { "label": "Комната слева", "goto": "room_left" },
+        { "label": "Комната справа", "goto": "room_right" },
+        { "label": "В конец коридора", "goto": "end_of_hall" }
+      ]
+    },
+
+    "hall_look": {
+      "text": [
+        "Слабый свет раскрывает очертания дверей. На полу — ржавый ключ и разорванная фотография.",
+        "Ты чувствуешь, как твоя тень дрожит отдельно от тебя."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/hall_look.webp",
+      "choices": [
+        { "label": "Поднять ключ", "goto": "hall_after_pick", "effects": {"add": ["rusty_key"]} },
+        { "label": "Поднять фотографию", "goto": "photo_pick" },
+        { "label": "Вернуться в коридор", "goto": "hall_return" }
+      ]
+    },
+
+    "hall_after_pick": {
+      "text": [
+        "Ключ холодный, будто его только что вынули изо льда. На зубцах — засохшая тёмная масса."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/hall_after_pick.webp",
+      "choices": [
+        { "label": "Вернуться в коридор", "goto": "hall_return" }
+      ]
+    },
+
+    "hall_return": {
+      "text": [
+        "Возвращаясь, ты замечаешь, что царапины на стенах изменились: теперь там твое имя.",
+        "Лампочка больше не мигает — она следит."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/hall_return.webp",
+      "choices": [
+        { "label": "Комната слева", "goto": "room_left" },
+        { "label": "Комната справа", "goto": "room_right" },
+        { "label": "В конец коридора", "goto": "end_of_hall" },
+        { "label": "Прислушаться к шёпоту", "goto": "hall_echo" },
+        { "label": "Сложить половинки фотографии", "goto": "photo_join", "require": {"hasAll": ["photo_half", "photo_half2"]} }
+      ]
+    },
+
+    "room_left": {
+      "title": "Старая детская",
+      "text": [
+        "Полки с потрёпанными игрушками. На стене — ростомер с пометками, заканчивающимися словом \"СТОЙ\".",
+        "Кресло-качалка раскачивается само."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/room_left.webp",
+      "choices": [
+        { "label": "Обыскать игрушки", "goto": "toys_search" },
+        { "label": "Смотреть под кровать", "goto": "under_bed" },
+        { "label": "Открыть шкаф", "goto": "left_closet" },
+        { "label": "Выйти в коридор", "goto": "room_left_return" }
+      ]
+    },
+
+    "room_left_return": {
+      "text": [
+        "Ты возвращаешься: кресло больше не двигается. Но теперь качается ростомер.",
+        "Чьи-то шаги повторяют твои паузы."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/room_left_return.webp",
+      "choices": [
+        { "label": "Обыскать игрушки", "goto": "toys_search" },
+        { "label": "Смотреть под кровать", "goto": "under_bed" },
+        { "label": "Выйти в коридор", "goto": "hall_return" }
+      ]
+    },
+
+    "toys_search": {
+      "text": [
+        "В плюшевом мишке спрятана записка: \"НЕ ПОВОРАЧИВАЙСЯ\" и половина кода: 7-?",
+        "В ухе мишки — маленькая шпилька."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/toys_search.webp",
+      "choices": [
+        { "label": "Взять шпильку", "goto": "room_left", "effects": {"add": ["hairpin"]} },
+        { "label": "Завести шкатулку", "goto": "music_box" },
+        { "label": "Запомнить код и вернуться", "goto": "room_left" }
+      ]
+    },
+
+    "under_bed": {
+      "text": [
+        "Под кроватью — коробка с замком. Замок можно вскрыть шпилькой.",
+        "Тени складываются в жест обращения к тишине."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/under_bed.webp",
+      "choices": [
+        { "label": "Вскрыть шпилькой (если она есть)", "goto": "box_open", "require": {"hasAll": ["hairpin"]} },
+        { "label": "Вернуться", "goto": "room_left_return" }
+      ]
+    },
+
+    "box_open": {
+      "text": [
+        "Внутри — вторая половина кода: ?-4 и детский рисунок, на котором у тебя нет лица.",
+        "Под рисунком — магнитный жетон."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/box_open.webp",
+      "choices": [
+        { "label": "Взять жетон", "goto": "room_left_return", "effects": {"add": ["mag_token"]} }
+      ]
+    },
+
+    "room_right": {
+      "title": "Больничная",
+      "text": [
+        "Металлические столы, лампы с очертаниями пальцев на плафонах.",
+        "На постаменте — сейф с кодовым замком (две цифры)."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/room_right.webp",
+      "choices": [
+        { "label": "Осмотреть сейф", "goto": "safe" },
+        { "label": "Обыскать лотки", "goto": "tray_search" },
+        { "label": "Инструментальный шкаф", "goto": "tool_cabinet" },
+        { "label": "Вернуться в коридор", "goto": "room_right_return" }
+      ]
+    },
+
+    "room_right_return": {
+      "text": [
+        "Вернувшись, ты замечаешь новые следы на полу — как будто кто-то вошёл и вышел из сейфа.",
+        "Запах эфира стал сильнее."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/room_right_return.webp",
+      "choices": [
+        { "label": "Осмотреть сейф", "goto": "safe" },
+        { "label": "Вернуться в коридор", "goto": "hall_return" }
+      ]
+    },
+
+    "safe": {
+      "text": [
+        "На циферблате две позиции. Ты вспоминаешь половинки кода из детской: 7-? и ?-4.",
+        "Кажется, верный код — 7-4."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/safe.webp",
+      "choices": [
+        { "label": "Ввести 7-4", "goto": "safe_open" },
+        { "label": "Отойти", "goto": "room_right_return" }
+      ]
+    },
+
+    "safe_open": {
+      "text": [
+        "Сейф открывается со скрипом. Внутри — записка: \"К ЛИФТУ БЕЗ ОТРАЖЕНИЯ\" и карта доступа.",
+        "На обратной стороне карты — пятно, похожее на тебя."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/safe_open.webp",
+      "choices": [
+        { "label": "Взять карту", "goto": "room_right_return", "effects": {"add": ["access_card"]} }
+      ]
+    },
+
+    "end_of_hall": {
+      "title": "Конец коридора",
+      "text": [
+        "Дверь с табличкой БЛОК ЛИФТОВ. Рядом панель: слот для карты и магнитный приёмник.",
+        "В отражении панели у тебя не совпадают глаза."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/end_of_hall.webp",
+      "choices": [
+        { "label": "Вставить карту (если есть)", "goto": "lift_panel", "require": {"hasAll": ["access_card"]} },
+        { "label": "Приложить жетон (если есть)", "goto": "lift_panel", "require": {"hasAll": ["mag_token"]} },
+        { "label": "Вернуться", "goto": "hall_return" }
+      ]
+    },
+
+    "lift_panel": {
+      "text": [
+        "Панель оживает. На дисплее мерцают этажи: -2, -1, 0, 1, 13.",
+        "Отражение улыбается раньше тебя."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/lift_panel.webp",
+      "choices": [
+        { "label": "Этаж -2 (техэтаж)", "goto": "floor_m2" },
+        { "label": "Этаж -1 (морг)", "goto": "floor_m1" },
+        { "label": "Этаж 0 (вход)", "goto": "floor_0" },
+        { "label": "Этаж 1 (палаты)", "goto": "floor_1" },
+        { "label": "Этаж 13 (запретный)", "goto": "floor_13" }
+      ]
+    },
+
+    "floor_m2": {
+      "text": [
+        "Шум труб и пар. В конце коридора — пульсирующая стена из плоти и металла.",
+        "Она шепчет тебе чужим голосом."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/floor_m2.webp",
+      "choices": [
+        { "label": "Прикоснуться", "goto": "ending_assimilation", "effects": {"add": ["mark"]} },
+        { "label": "К вентилям и трубам", "goto": "m2_valves" },
+        { "label": "К паровому проходу", "goto": "m2_steam_path" },
+        { "label": "Отступить к лифту", "goto": "lift_panel" }
+      ]
+    },
+
+    "floor_m1": {
+      "text": [
+        "Морозильные камеры. На каждой — имя, зачёркнутое кровью. Одна открыта. Внутри — пусто, и следы наружу."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/floor_m1.webp",
+      "choices": [
+        { "label": "Лечь внутрь", "goto": "ending_cold_acceptance" },
+        { "label": "В коридор камер", "goto": "m1_hall_a" },
+        { "label": "Бежать к лифту", "goto": "lift_panel" }
+      ]
+    },
+
+    "floor_0": {
+      "text": [
+        "Вестибюль. Двери заблокированы. В зеркале у входа — никто. Ты исчез."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/floor_0.webp",
+      "choices": [
+        { "label": "Вглядеться в зеркало", "goto": "ending_missing_reflection" },
+        { "label": "Вернуться к лифту", "goto": "lift_panel" }
+      ]
+    },
+
+    "floor_1": {
+      "text": [
+        "Одинокая палата. На кровати — записка: \"ЕСЛИ ТЫ ЭТО ЧИТАЕШЬ, УЖЕ СЛИШКОМ ПОЗДНО\".",
+        "Окно открыто, за окном — ночь без звёзд."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/floor_1.webp",
+      "choices": [
+        { "label": "Выпрыгнуть", "goto": "ending_fall" },
+        { "label": "Коридор палат", "goto": "f1_ward_hall" },
+        { "label": "Назад к лифту", "goto": "lift_panel" }
+      ]
+    },
+
+    "floor_13": {
+      "text": [
+        "Коридор без ламп. Свет исходит от стен. В конце — дверь с табличкой \"ДОМОЙ\".",
+        "Рука на ручке — не твоя."
+      ],
+      "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/floor_13.webp",
+      "choices": [
+        { "label": "Открыть дверь", "goto": "ending_home_false" },
+        { "label": "Осмотреть тьму", "goto": "f13_dark_hall" },
+        { "label": "Передумать и вернуться", "goto": "lift_panel" }
+      ]
+    },
+
+    "ending_assimilation": { "text": ["Стена раскрывается и принимает тебя, как тёплая рана. Ты становишься частью шёпота."], "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/ending_assimilation.webp", "end": true },
+    "ending_cold_acceptance": { "text": ["Холод обнимает. Ты понимаешь, что всегда лежал здесь. Всегда."], "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/ending_cold_acceptance.webp", "end": true },
+    "ending_missing_reflection": { "text": ["Отражение смотрит на тебя снаружи зеркала и уходит. Ты остаёшься здесь, безликий."], "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/ending_missing_reflection.webp", "end": true },
+    "ending_fall": { "text": ["Падая, ты видишь, что этажи повторяются циклом. На 13-м ты улыбаешься."], "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/ending_fall.webp", "end": true },
+    "ending_home_false": { "text": ["За дверью — комната, где всё на своих местах. Кроме тебя."], "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/ending_home_false.webp", "end": true },
+    "ending_true": { "text": ["Ты совмещаешь карту и жетон, дверь открывается не в лифт, а наружу. Ночь дышит. Ты тоже."], "image": "https://raw.githubusercontent.com/MannyCat/FPA/main/QuestImage/Flat5-1/ending_true.webp", "end": true },
+
+    "photo_pick": {
+      "text": [
+        "Фотография разорвана пополам. На обороте — палец, указующий вверх.",
+        "Ты берёшь половину, где видна дверь с табличкой."],
+      "choices": [
+        { "label": "Спрятать половинку", "goto": "hall_return", "effects": {"add": ["photo_half"]} }
+      ]
+    },
+
+    "photo_join": {
+      "text": [
+        "Две половинки сходятся неидеально, но на стыке видно число: 13.",
+        "На заднем плане — твоё отражение без глаз."],
+      "choices": [
+        { "label": "Понять намёк и вернуться", "goto": "hall_return" },
+        { "label": "Поднести к зеркалу", "goto": "hint_mirror" }
+      ]
+    },
+
+    "hint_mirror": {
+      "text": [
+        "Отражение складывает пальцы: два движения вверх, одно вниз. Этажи мигают в голове.",
+        "Ты чувствуешь, что лифт — не единственный путь."],
+      "choices": [
+        { "label": "Назад", "goto": "hall_return" }
+      ]
+    },
+
+    "hall_echo": {
+      "text": [
+        "Шёпот повторяет твои вдохи. В паузах — слова: \"не поворачивайся\".",
+        "Вдруг ты слышишь третье дыхание."],
+      "choices": [
+        { "label": "Рвануть вперёд", "goto": "end_of_hall" },
+        { "label": "Стоять и слушать", "goto": "hall_return", "effects": {"add": ["echo_heard"]} }
+      ]
+    },
+
+    "left_closet": {
+      "text": [
+        "Шкаф открывается с трудом. Внутри — подвесы с одеждой и коробка на верхней полке."],
+      "choices": [
+        { "label": "Дотянуться до коробки", "goto": "closet_inside" },
+        { "label": "Заглянуть глубже", "goto": "closet_whisper" },
+        { "label": "Закрыть шкаф", "goto": "room_left_return" }
+      ]
+    },
+
+    "closet_inside": {
+      "text": [
+        "Коробка падает. Внутри — пуговицы, нитки и бляшка с цифрой 7."],
+      "choices": [
+        { "label": "Взять бляшку", "goto": "room_left_return", "effects": {"add": ["tag7"]} }
+      ]
+    },
+
+    "closet_whisper": {
+      "text": [
+        "Из глубины шкафа — сухой шорох. На стенке внутри мелом: 7→4."],
+      "choices": [
+        { "label": "Запомнить и назад", "goto": "room_left_return" }
+      ]
+    },
+
+    "music_box": {
+      "text": [
+        "Ты заводишь шкатулку. Мелодия срывается на фальшь — как будто её слушают изнутри.",
+        "В донышке — тонкая царапина в виде стрелки к шкафу."],
+      "choices": [
+        { "label": "К шкафу", "goto": "left_closet" },
+        { "label": "Вернуться", "goto": "room_left_return" }
+      ]
+    },
+
+    "tray_search": {
+      "text": [
+        "В лотках — инструменты, бинты, стеклянные палочки. Между листами — вторая половина фото."],
+      "choices": [
+        { "label": "Взять половинку", "goto": "room_right", "effects": {"add": ["photo_half2"]} }
+      ]
+    },
+
+    "tool_cabinet": {
+      "text": [
+        "Шкаф заперт на защёлку. В щели — тонкая цепочка."],
+      "choices": [
+        { "label": "Поддеть шпилькой (если есть)", "goto": "scalpel_take", "require": {"hasAll": ["hairpin"]} },
+        { "label": "Вернуться", "goto": "room_right_return" }
+      ]
+    },
+
+    "scalpel_take": {
+      "text": [
+        "Защёлка поддаётся. Внутри — набор инструментов. Ты берёшь скальпель."],
+      "choices": [
+        { "label": "Спрятать скальпель", "goto": "room_right_return", "effects": {"add": ["scalpel"]} }
+      ]
+    },
+
+    "m2_valves": {
+      "text": [
+        "Ряд вентилей с пометками: ПАР, ХОЛОД, СМЕСЬ. Один из них пропускает, свищет.",
+        "На полу — отпечатки ладоней. Твои ли?"],
+      "choices": [
+        { "label": "Повернуть ПАР", "goto": "m2_valves_puzzle", "effects": {"add": ["valve_steam"]} },
+        { "label": "Повернуть ХОЛОД", "goto": "m2_valves_puzzle", "effects": {"add": ["valve_cold"]} },
+        { "label": "Повернуть СМЕСЬ", "goto": "m2_valves_puzzle", "effects": {"add": ["valve_mix"]} },
+        { "label": "Назад к коридору", "goto": "floor_m2" }
+      ]
+    },
+
+    "m2_valves_puzzle": {
+      "text": [
+        "Шум меняется. Вдоль стены что-то открывается — узкая щель ведёт в сервисный лоток.",
+        "Кажется, нужен правильный порядок: СМЕСЬ → ХОЛОД → ПАР."],
+      "choices": [
+        { "label": "Попробовать пройти", "goto": "m2_pressure_ok", "require": {"hasAll": ["valve_mix", "valve_cold", "valve_steam"]} },
+        { "label": "Сбросить и вернуться", "goto": "floor_m2", "effects": {"remove": ["valve_mix", "valve_cold", "valve_steam"]} }
+      ]
+    },
+
+    "m2_pressure_ok": {
+      "text": [
+        "Ты протискиваешься через лоток. На конце — люк с символом, похожим на твоё имя.",
+        "Под люком — шахта, где гул похож на дыхание."],
+      "choices": [
+        { "label": "Вернуться к лифту", "goto": "lift_panel" },
+        { "label": "Запомнить путь", "goto": "floor_m2", "effects": {"add": ["m2_shortcut"]} }
+      ]
+    },
+
+    "m2_steam_path": {
+      "text": [
+        "Пар жжёт кожу. Сквозь облака видна табличка: 7→4. Здесь это повторяют все стены.",
+        "За облаком слышен тихий смех."],
+      "choices": [
+        { "label": "Вернуться назад", "goto": "floor_m2" }
+      ]
+    },
+
+    "m1_hall_a": {
+      "text": [
+        "Длинный коридор камер. Цифры на дверях двоятся, как в тумане.",
+        "Одна дверь приоткрыта — внутри блестит металл."],
+      "choices": [
+        { "label": "Заглянуть в приоткрытую", "goto": "m1_cold_room" },
+        { "label": "Дальше по коридору", "goto": "m1_hall_b" },
+        { "label": "Назад в холл", "goto": "floor_m1" }
+      ]
+    },
+
+    "m1_hall_b": {
+      "text": [
+        "Темнее, холоднее. На полу — вываленный ящик с бирками. На одной — 7-4."],
+      "choices": [
+        { "label": "Посмотреть бирки", "goto": "m1_tag_drawer" },
+        { "label": "Возвратиться", "goto": "m1_hall_a" }
+      ]
+    },
+
+    "m1_cold_room": {
+      "text": [
+        "Внутри — инструменты и установленный крюк. На стене мелом: 'не закрывайся'.",
+        "На столике — тетрадь с оборванными страницами."],
+      "choices": [
+        { "label": "Открыть тетрадь", "goto": "m1_code_hint" },
+        { "label": "Вернуться", "goto": "m1_hall_a" }
+      ]
+    },
+
+    "m1_tag_drawer": {
+      "text": [
+        "Бирки звенят. На обратной стороне нескольких — отметки в виде вертикалей: ||| — | — ||||."],
+      "choices": [
+        { "label": "Спрятать одну бирку", "goto": "m1_hall_b", "effects": {"add": ["tag_hint"]} },
+        { "label": "Назад", "goto": "m1_hall_a" }
+      ]
+    },
+
+    "m1_code_hint": {
+      "text": [
+        "В тетради — учёт камер и странные пометки. Страница с кодами: 'семь вниз — четыре вверх'.",
+        "Тебе становится понятнее, почему сейф слушается последовательностей."],
+      "choices": [
+        { "label": "Запомнить и вернуться", "goto": "m1_hall_a" },
+        { "label": "К лифту", "goto": "lift_panel" }
+      ]
+    },
+
+    "f1_ward_hall": {
+      "text": [
+        "Тихий коридор палат. Номера без логики: 1, 13, 0.",
+        "В нише — тумбочка, на ней стакан с водой, в воде — волос."],
+      "choices": [
+        { "label": "Палата 1 (если трогал контур)", "goto": "f1_room1_alt", "require": {"hasAll": ["mirror_trace"]} },
+        { "label": "Палата 1", "goto": "f1_room1" },
+        { "label": "Палата 13", "goto": "f1_room13" },
+        { "label": "Палата 0", "goto": "f1_room0" },
+        { "label": "Журнал приёмов", "goto": "f1_logs" },
+        { "label": "Осмотреть тумбочку", "goto": "f1_nightstand" },
+        { "label": "Назад к лифту", "goto": "lift_panel" }
+      ]
+    },
+
+    "f1_nightstand": {
+      "text": [
+        "В тумбочке — записка: 'не пей воду'. Под запиской — сухая карточка с отпечатком."],
+      "choices": [
+        { "label": "Взять отпечаток", "goto": "f1_ward_hall", "effects": {"add": ["finger_mark"]} }
+      ]
+    },
+
+    "f1_room1": {
+      "text": [
+        "Пустая палата. На стене силуэт зеркала, снятого кем-то недавно.",
+        "На полу — следы колёс и отпечатки босых ног."],
+      "choices": [
+        { "label": "Потрогать контур зеркала", "goto": "f1_mirror_trace" },
+        { "label": "Вернуться", "goto": "f1_ward_hall" }
+      ]
+    },
+
+    "f1_room1_alt": {
+      "text": [
+        "Ты уже знаешь этот контур. Теперь он тянет руку сам, оставляя на коже холодные круги.",
+        "В воздухе — тихий шорох, напоминающий эхо с 13-го."],
+      "choices": [
+        { "label": "Стоять тихо", "goto": "f1_room1_alt_listen", "effects": {"add": ["f1_listen"]} },
+        { "label": "Назад", "goto": "f1_ward_hall" }
+      ]
+    },
+    "f1_room1_alt_listen": {
+      "text": [
+        "Шорох отвечает ровным дыханием. Кажется, где-то открылась створка вентиляции."],
+      "choices": [
+        { "label": "Вернуться в коридор", "goto": "f1_ward_hall", "effects": {"add": ["f1_vent_hint"]} }
+      ]
+    },
+
+    "f1_mirror_trace": {
+      "text": [
+        "Контур холодит руку. На коже остаётся рябь, как от воды.",
+        "В голове вспыхивает образ таблички 'ДОМОЙ'."],
+      "choices": [
+        { "label": "Назад", "goto": "f1_ward_hall", "effects": {"add": ["mirror_trace"]} }
+      ]
+    },
+
+    "f1_room13": {
+      "text": [
+        "Палата с чёрными шторами. На кровати — пустой браслет пациента и карта памяти."],
+      "choices": [
+        { "label": "Взять браслет", "goto": "f1_ward_hall", "effects": {"add": ["patient_band"]} },
+        { "label": "Взять карту памяти", "goto": "f1_mem_card" },
+        { "label": "Назад", "goto": "f1_ward_hall" }
+      ]
+    },
+
+    "f1_room13_return": {
+      "text": [
+        "Ты возвращаешься. Шторы стали тяжелее. На кровати — вмятина, как от тебя."],
+      "choices": [
+        { "label": "Подойти к кровати", "goto": "f1_room13_mark" },
+        { "label": "Назад", "goto": "f1_ward_hall" }
+      ]
+    },
+    "f1_room13_mark": {
+      "text": [
+        "На простыне — след, похожий на отпечаток. Он ровный — пригодится там, где требуют знак."],
+      "choices": [
+        { "label": "Запомнить рисунок", "goto": "f1_ward_hall", "effects": {"add": ["finger_mark"]} }
+      ]
+    },
+
+    "f1_mem_card": {
+      "text": [
+        "Карта памяти не читается на вид. Но на ней процарапано: 'смотреть в темноте'."],
+      "choices": [
+        { "label": "Спрятать карту", "goto": "f1_ward_hall", "effects": {"add": ["mem_card"]} }
+      ]
+    },
+
+    "f1_room0": {
+      "text": [
+        "Нулевая палата. Здесь будто ничего не начинается и не заканчивается.",
+        "На стене — пустая рама. Внутри — темнота, как в воде."],
+      "choices": [
+        { "label": "Смотреть внутрь", "goto": "f1_dark_test" },
+        { "label": "Назад", "goto": "f1_ward_hall" }
+      ]
+    },
+
+    "f1_dark_test": {
+      "text": [
+        "Ты смотришь — и тьма смотрит в ответ. Вскрываются тихие шаги за спиной.",
+        "Шёпот: 'если не повернёшься — пройдёшь'."],
+      "choices": [
+        { "label": "Не поворачиваться", "goto": "f1_dark_pass", "effects": {"add": ["courage"]} },
+        { "label": "Повернуться", "goto": "f1_dark_fail" }
+      ]
+    },
+
+    "f1_dark_pass": {
+      "text": [
+        "Тьма отступает. В раме — мерцание воды. Тебе открывается короткий путь."],
+      "choices": [
+        { "label": "К коридору палат", "goto": "f1_ward_hall", "effects": {"add": ["f1_shortcut"]} }
+      ]
+    },
+
+    "f1_dark_fail": {
+      "text": [
+        "Ты оборачиваешься — и тень делает то же. В раме остаётся только твой силуэт без глаз."],
+      "choices": [
+        { "label": "Отпрянуть", "goto": "f1_ward_hall" }
+      ]
+    },
+
+    "f1_logs": {
+      "text": [
+        "Журнал приёмов. Строки вырваны, остались только цифры: 1, 13, 0. И стрелки между ними."],
+      "choices": [
+        { "label": "Совместить с фотографией", "goto": "photo_join", "require": {"hasAll": ["photo_half", "photo_half2"]} },
+        { "label": "Вернуться", "goto": "f1_ward_hall" }
+      ]
+    },
+
+    "f13_dark_hall": {
+      "text": [
+        "Темнота пахнет озоном. Где-то щёлкает выключатель, но света не добавляется.",
+        "На стене — углём стрелки к двери без ручки."],
+      "choices": [
+        { "label": "К двери без ручки", "goto": "f13_handleless" },
+        { "label": "Назад", "goto": "floor_13" }
+      ]
+    },
+
+    "f13_handleless": {
+      "text": [
+        "Дверь гладкая, как стекло. В углу — паз под карту. Рядом — круглый слот.",
+        "Отражение повторяет твоё дыхание с задержкой."],
+      "choices": [
+        { "label": "Карта доступа (если есть)", "goto": "f13_panel_ready", "require": {"hasAll": ["access_card"]} },
+        { "label": "Магнитный жетон (если есть)", "goto": "f13_panel_ready", "require": {"hasAll": ["mag_token"]} },
+        { "label": "Идти вслепую (если хватит духу)", "goto": "f13_blind_walk", "require": {"hasAll": ["courage"]} },
+        { "label": "Вернуться", "goto": "f13_dark_hall" }
+      ]
+    },
+
+    "f13_blind_walk": {
+      "text": [
+        "Ты идёшь, не глядя. Стены сами уступают дорогу. Эхо больше не обманывает."],
+      "choices": [
+        { "label": "Вперёд", "goto": "f13_mirror_gate" },
+        { "label": "Назад", "goto": "f13_handleless" }
+      ]
+    },
+
+    "f13_panel_ready": {
+      "text": [
+        "Когда карта и жетон оказываются рядом, дверь будто \"вспоминает\" тебя.",
+        "На поверхности проступают слова: 'зеркало — ключ'."],
+      "choices": [
+        { "label": "Поднести фотографию к поверхности (если собраны половинки)", "goto": "f13_mirror_gate", "require": {"hasAll": ["photo_half", "photo_half2"]} },
+        { "label": "Приложить браслет пациента", "goto": "f13_mirror_gate", "require": {"hasAll": ["patient_band"]} },
+        { "label": "Отойти", "goto": "f13_handleless" }
+      ]
+    },
+
+    "f13_mirror_gate": {
+      "text": [
+        "Поверхность дрожит, как вода. Из темноты выступает твоё отражение — без глаз.",
+        "Оно кивает, приглашая внутрь."],
+      "choices": [
+        { "label": "Войти", "goto": "f13_ritual" },
+        { "label": "Прислушаться к эхам", "goto": "f13_echo_loop" },
+        { "label": "Передумать", "goto": "f13_handleless" }
+      ]
+    },
+
+    "f13_symbols": {
+      "text": [
+        "На полу — три метки: круг, треугольник, квадрат. На стене — тени делают четвёртую фигуру.",
+        "Шёпот ведёт тебя по порядку, которого нет."],
+      "choices": [
+        { "label": "Круг → Треугольник → Квадрат", "goto": "f13_symbols_try", "effects": {"add": ["sym_ctk"]} },
+        { "label": "Квадрат → Круг → Треугольник", "goto": "f13_symbols_try", "effects": {"add": ["sym_kct"]} },
+        { "label": "Треугольник → Квадрат → Круг", "goto": "f13_symbols_try", "effects": {"add": ["sym_tkc"]} },
+        { "label": "Назад", "goto": "f13_ritual" }
+      ]
+    },
+    "f13_symbols_try": {
+      "text": [
+        "Пол отвечает вибрацией. Кажется, верный порядок связан с цифрами 1, 13, 0."],
+      "choices": [
+        { "label": "Использовать отпечаток как ключ (если есть)", "goto": "f13_symbols_ok", "require": {"hasAll": ["finger_mark"]} },
+        { "label": "Вернуться", "goto": "f13_ritual", "effects": {"remove": ["sym_ctk", "sym_kct", "sym_tkc"]} }
+      ]
+    },
+    "f13_symbols_ok": {
+      "text": [
+        "Звук меняется на ровный. На стене открывается скрытая щель — туда уходит твоё отражение."],
+      "choices": [
+        { "label": "Следовать", "goto": "f13_mirror_gate" },
+        { "label": "Остаться", "goto": "f13_ritual" }
+      ]
+    },
+
+    "f13_echo_loop": {
+      "text": [
+        "Эхо твоих шагов не совпадает с реальностью. Между ударами — посторонний рисунок дыхания.",
+        "Справа — ниша, слева — занавес, впереди — пустой проём."],
+      "choices": [
+        { "label": "Справа", "goto": "f13_niche" },
+        { "label": "Слева", "goto": "f13_curtain" },
+        { "label": "Вперёд", "goto": "f13_memory" }
+      ]
+    },
+
+    "f13_niche": {
+      "text": [
+        "В нише — осколок зеркала. На кромке — кровь (твоя?)."],
+      "choices": [
+        { "label": "Взять осколок", "goto": "f13_echo_loop", "effects": {"add": ["mirror_shard"]} },
+        { "label": "Назад", "goto": "f13_echo_loop" }
+      ]
+    },
+
+    "f13_curtain": {
+      "text": [
+        "За занавесом — только стена. На ней — отпечатки ладоней и цифра 0."],
+      "choices": [
+        { "label": "Вернуться", "goto": "f13_echo_loop" }
+      ]
+    },
+
+    "f13_memory": {
+      "text": [
+        "Ты вспоминаешь, как это место было чистым. Или тебе это подсказывают стены?",
+        "В воздухе — рябь, как у контуров зеркала в палате."],
+      "choices": [
+        { "label": "Сложить осколок с фотографией (если есть)", "goto": "f13_ritual", "require": {"hasAll": ["mirror_shard", "photo_half", "photo_half2"]} },
+        { "label": "Вернуться", "goto": "f13_echo_loop" }
+      ]
+    },
+
+    "f13_ritual": {
+      "text": [
+        "Комната без углов. На полу — метки: круг, треугольник, квадрат.",
+        "Стену беспокоит твой шёпот. Твой?"],
+      "choices": [
+        { "label": "Совместить карту и жетон", "goto": "ending_true", "require": {"hasAll": ["access_card", "mag_token"]} },
+        { "label": "Положить отпечаток", "goto": "f13_ritual_mark", "require": {"hasAll": ["finger_mark"]} },
+        { "label": "Отойти", "goto": "f13_mirror_gate" }
+      ]
+    },
+
+    "f13_ritual_mark": {
+      "text": [
+        "Ты оставляешь отпечаток. Линии расходятся, образуя число 13."],
+      "choices": [
+        { "label": "Собрать всё вместе", "goto": "ending_true", "require": {"hasAll": ["access_card", "mag_token"]} },
+        { "label": "Назад", "goto": "f13_ritual" }
+      ]
+    }
+  },
+
+  "meta": {
+    "title": {"ru": "Пустые этажи", "en": "Empty Floors"},
+    "achievements": [
+      {"code": "start", "title": "Пробуждение", "when": {"type": "quest_started"}},
+      {"code": "find_key", "title": "Холодный ключ", "when": {"type": "reach_scene", "sceneId": "hall_after_pick"}},
+      {"code": "open_box", "title": "Тихий щелчок", "when": {"type": "reach_scene", "sceneId": "box_open"}},
+      {"code": "open_safe", "title": "Код 7-4", "when": {"type": "reach_scene", "sceneId": "safe_open"}},
+      {"code": "two_pass", "title": "Два пропуска", "when": {"type": "have_items_all", "items": ["access_card", "mag_token"]}},
+      {"code": "true_end", "title": "Выдох снаружи", "when": {"type": "reach_scene", "sceneId": "ending_true"}},
+      {"code": "complete", "title": "Шесть исходов", "when": {"type": "quest_completed"}},
+      {"code": "no_turn", "title": "Не повернулся", "when": {"type": "reach_scene", "sceneId": "f1_dark_pass"}},
+      {"code": "echo_guide", "title": "Эхо-проводник", "when": {"type": "reach_scene", "sceneId": "f13_memory"}},
+      {"code": "mirror_key", "title": "Зеркальный ключ", "when": {"type": "have_items_all", "items": ["photo_half", "photo_half2", "mirror_shard"]}},
+      {"code": "m2_shortcut", "title": "Сокращённый путь -2", "when": {"type": "have_items_all", "items": ["m2_shortcut"]}},
+      {"code": "seq_1130", "title": "Память 1–13–0", "when": {"type": "reach_scene", "sceneId": "f13_symbols_ok"}},
+      {"code": "blind_walk", "title": "Идти вслепую", "when": {"type": "reach_scene", "sceneId": "f13_blind_walk"}}
+    ]
+  }
+}
