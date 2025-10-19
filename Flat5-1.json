@@ -1,4 +1,24 @@
 {
+  "meta": {
+    "id": "psych_horror",
+    "title": { "en": "psych_horror", "ru": "Пустые этажи" },
+    "author": "",
+    "achievements": [
+      {"code": "start", "title": "Пробуждение", "when": {"type": "quest_started"}},
+      {"code": "find_key", "title": "Холодный ключ", "when": {"type": "reach_scene", "sceneId": "hall_after_pick"}},
+      {"code": "open_box", "title": "Тихий щелчок", "when": {"type": "reach_scene", "sceneId": "box_open"}},
+      {"code": "open_safe", "title": "Код 7-4", "when": {"type": "reach_scene", "sceneId": "safe_open"}},
+      {"code": "two_pass", "title": "Два пропуска", "when": {"type": "have_items_all", "items": ["access_card", "mag_token"]}},
+      {"code": "true_end", "title": "Выдох снаружи", "when": {"type": "reach_scene", "sceneId": "ending_true"}},
+      {"code": "complete", "title": "Шесть исходов", "when": {"type": "quest_completed"}},
+      {"code": "no_turn", "title": "Не повернулся", "when": {"type": "reach_scene", "sceneId": "f1_dark_pass"}},
+      {"code": "echo_guide", "title": "Эхо-проводник", "when": {"type": "reach_scene", "sceneId": "f13_memory"}},
+      {"code": "mirror_key", "title": "Зеркальный ключ", "when": {"type": "have_items_all", "items": ["photo_half", "photo_half2", "mirror_shard"]}},
+      {"code": "m2_shortcut", "title": "Сокращённый путь -2", "when": {"type": "have_items_all", "items": ["m2_shortcut"]}},
+      {"code": "seq_1130", "title": "Память 1–13–0", "when": {"type": "reach_scene", "sceneId": "f13_symbols_ok"}},
+      {"code": "blind_walk", "title": "Идти вслепую", "when": {"type": "reach_scene", "sceneId": "f13_blind_walk"}}
+    ]
+  },
   "start": "hall",
   "nodes": {
     "hall": {
@@ -720,6 +740,7 @@
       "choices": [
         { "label": "Совместить карту и жетон", "goto": "ending_true", "require": {"hasAll": ["access_card", "mag_token"]} },
         { "label": "Положить отпечаток", "goto": "f13_ritual_mark", "require": {"hasAll": ["finger_mark"]} },
+        { "label": "Осмотреть метки на полу", "goto": "f13_symbols" },
         { "label": "Отойти", "goto": "f13_mirror_gate" }
       ]
     },
@@ -732,24 +753,5 @@
         { "label": "Назад", "goto": "f13_ritual" }
       ]
     }
-  },
-
-  "meta": {
-    "title": {"ru": "Пустые этажи", "en": "Empty Floors"},
-    "achievements": [
-      {"code": "start", "title": "Пробуждение", "when": {"type": "quest_started"}},
-      {"code": "find_key", "title": "Холодный ключ", "when": {"type": "reach_scene", "sceneId": "hall_after_pick"}},
-      {"code": "open_box", "title": "Тихий щелчок", "when": {"type": "reach_scene", "sceneId": "box_open"}},
-      {"code": "open_safe", "title": "Код 7-4", "when": {"type": "reach_scene", "sceneId": "safe_open"}},
-      {"code": "two_pass", "title": "Два пропуска", "when": {"type": "have_items_all", "items": ["access_card", "mag_token"]}},
-      {"code": "true_end", "title": "Выдох снаружи", "when": {"type": "reach_scene", "sceneId": "ending_true"}},
-      {"code": "complete", "title": "Шесть исходов", "when": {"type": "quest_completed"}},
-      {"code": "no_turn", "title": "Не повернулся", "when": {"type": "reach_scene", "sceneId": "f1_dark_pass"}},
-      {"code": "echo_guide", "title": "Эхо-проводник", "when": {"type": "reach_scene", "sceneId": "f13_memory"}},
-      {"code": "mirror_key", "title": "Зеркальный ключ", "when": {"type": "have_items_all", "items": ["photo_half", "photo_half2", "mirror_shard"]}},
-      {"code": "m2_shortcut", "title": "Сокращённый путь -2", "when": {"type": "have_items_all", "items": ["m2_shortcut"]}},
-      {"code": "seq_1130", "title": "Память 1–13–0", "when": {"type": "reach_scene", "sceneId": "f13_symbols_ok"}},
-      {"code": "blind_walk", "title": "Идти вслепую", "when": {"type": "reach_scene", "sceneId": "f13_blind_walk"}}
-    ]
   }
 }
