@@ -9,60 +9,59 @@ void main() {
   runApp(ChangeNotifierProvider(create: (_) => GameState(), child: const ShadowChatApp()));
 }
 
-// ═══════════════════════════════════════════════════════════════
-// THEME & APP
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// TELEGRAM DARK THEME
+// ═══════════════════════════════════════════
+
+const _bg = Color(0xFF17212B);
+const _surface = Color(0xFF182533);
+const _outBubble = Color(0xFF2B5278);
+const _accent = Color(0xFF64B5F6);
+const _green = Color(0xFF4DCD5E);
+const _text1 = Color(0xFFFFFFFF);
+const _text2 = Color(0xFF6C7883);
+const _text3 = Color(0xFF546E7A);
+const _divider = Color(0xFF0F1921);
+const _header = Color(0xFF17212B);
+const _inputBg = Color(0xFF182533);
+const _unreadBadge = Color(0xFF64B5F6);
 
 class ShadowChatApp extends StatelessWidget {
   const ShadowChatApp({super.key});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SHADOWCHAT',
+      title: 'Telegram',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0A0A10),
+        scaffoldBackgroundColor: _bg,
+        primaryColor: _accent,
+        appBarTheme: const AppBarTheme(backgroundColor: _header, foregroundColor: _text1, elevation: 0),
+        cardColor: _surface,
+        dividerColor: _divider,
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF00D4AA),
-          secondary: Color(0xFFFF3366),
-          surface: Color(0xFF12121C),
+          primary: _accent,
+          surface: _surface,
+          onPrimary: _text1,
+          secondary: _text2,
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0E0E16),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: false,
+        iconTheme: const IconThemeData(color: _accent),
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(color: _text1, fontSize: 15),
+          bodySmall: TextStyle(color: _text2, fontSize: 13),
         ),
-        cardTheme: CardThemeData(
-          color: const Color(0xFF161622),
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFF0C0C14),
-          selectedItemColor: Color(0xFF00D4AA),
-          unselectedItemColor: Color(0xFF3A3A4A),
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-        ),
-        dividerColor: const Color(0xFF1A1A28),
       ),
       home: const AppShell(),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// APP SHELL — Main Navigation
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// APP SHELL
+// ═══════════════════════════════════════════
 
-class AppShell extends StatefulWidget {
+class AppShell extends StatelessWidget {
   const AppShell({super.key});
-  @override
-  State<AppShell> createState() => _AppShellState();
-}
-
-class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final gs = context.watch<GameState>();
@@ -83,28 +82,14 @@ class _AppShellState extends State<AppShell> {
           ChaptersScreen(),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Color(0xFF1A1A28), width: 0.5)),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: gs.currentTab,
-          onTap: (i) => gs.setTab(i),
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), activeIcon: Icon(Icons.chat_bubble), label: 'Чаты'),
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: 'Улики'),
-            BottomNavigationBarItem(icon: Icon(Icons.phone_outlined), activeIcon: Icon(Icons.phone), label: 'Звонки'),
-            BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), activeIcon: Icon(Icons.menu_book), label: 'Сюжет'),
-          ],
-        ),
-      ),
+      bottomNavigationBar: _TGBottomNav(currentIndex: gs.currentTab, onTap: (i) => gs.setTab(i)),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SPLASH SCREEN — Atmospheric with glitch effect
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// SPLASH — Telegram style
+// ═══════════════════════════════════════════
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -112,154 +97,61 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
-  late AnimationController _mainCtrl;
-  late AnimationController _glitchCtrl;
-  late AnimationController _pulseCtrl;
-
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
   @override
   void initState() {
     super.initState();
-    _mainCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 4000));
-    _glitchCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 150))..repeat(reverse: true);
-    _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
-    _mainCtrl.forward().then((_) {
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2800));
+    _ctrl.forward().then((_) {
       if (mounted) {
         context.read<GameState>().finishSplash();
         context.read<GameState>().showChapterIntro(1);
       }
     });
   }
-
   @override
-  void dispose() {
-    _mainCtrl.dispose();
-    _glitchCtrl.dispose();
-    _pulseCtrl.dispose();
-    super.dispose();
-  }
+  void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF050508),
-      body: Stack(
-        children: [
-          // Background particles
-          ...List.generate(20, (i) => Positioned(
-            left: (i * 47.3) % 360.0,
-            top: (i * 73.7) % 700.0,
-            child: AnimatedBuilder(
-              animation: _pulseCtrl,
-              builder: (_, __) => Container(
-                width: 2,
-                height: 2,
+      backgroundColor: _bg,
+      body: Center(
+        child: AnimatedBuilder(
+          animation: _ctrl,
+          builder: (_, child) {
+            final t = Curves.easeOut.transform(_ctrl.value.clamp(0, 1));
+            final fadeOut = _ctrl.value > 0.85 ? 1 - (_ctrl.value - 0.85) / 0.15 : 1.0;
+            return Opacity(opacity: fadeOut, child: Transform.scale(scale: 0.8 + 0.2 * t, child: child));
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100, height: 100,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00D4AA).withOpacity(0.1 + 0.1 * sin(_pulseCtrl.value * 2 * pi + i)),
-                  borderRadius: BorderRadius.circular(1),
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(26),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 20)],
                 ),
+                child: const Icon(Icons.send_rounded, size: 42, color: _accent),
               ),
-            ),
-          )),
-          // Main content
-          Center(
-            child: AnimatedBuilder(
-              animation: _mainCtrl,
-              builder: (ctx, child) {
-                final t = _mainCtrl.value;
-                final fadeIn = Curves.easeInOut.transform(t < 0.2 ? t / 0.2 : 1.0);
-                final scaleIn = 0.7 + 0.3 * Curves.easeOutBack.transform(t < 0.35 ? t / 0.35 : 1.0);
-                final fadeOut = t > 0.85 ? (1.0 - t) / 0.15 : 1.0;
-                return Opacity(
-                  opacity: (fadeIn * fadeOut).clamp(0.0, 1.0),
-                  child: Transform.scale(scale: scaleIn, child: child),
-                );
-              },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Logo with glow
-                  AnimatedBuilder(
-                    animation: _pulseCtrl,
-                    builder: (_, __) => Container(
-                      width: 110,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF00D4AA), Color(0xFF0088CC)],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF00D4AA).withOpacity(0.15 + 0.1 * _pulseCtrl.value),
-                            blurRadius: 40 + 10 * _pulseCtrl.value,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(Icons.shield, size: 50, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  // Title with glitch
-                  AnimatedBuilder(
-                    animation: _glitchCtrl,
-                    builder: (_, __) {
-                      final offset = _glitchCtrl.value * 2 - 1;
-                      return Stack(
-                        children: [
-                          Text(
-                            'SHADOWCHAT',
-                            style: TextStyle(
-                              fontSize: 38,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 8,
-                              color: const Color(0xFF00D4AA),
-                              shadows: [
-                                Shadow(color: Colors.red.withOpacity(0.3), offset: Offset(offset, 0), blurRadius: 0),
-                                Shadow(color: Colors.cyan.withOpacity(0.3), offset: Offset(-offset, 0), blurRadius: 0),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'Неизвестный написал тебе...',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF4A4A5A),
-                      letterSpacing: 2,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  const SizedBox(height: 80),
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 1.5,
-                      color: const Color(0xFF00D4AA).withOpacity(0.4),
-                      backgroundColor: Colors.transparent,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+              const SizedBox(height: 24),
+              const Text('ShadowChat', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _text1, letterSpacing: 0.5)),
+              const SizedBox(height: 8),
+              const Text('Неизвестный написал вам', style: TextStyle(fontSize: 13, color: _text2)),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CHAPTER INTRO SCREEN
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// CHAPTER INTRO
+// ═══════════════════════════════════════════
 
 class ChapterIntroScreen extends StatefulWidget {
   final int chapterNum;
@@ -270,100 +162,104 @@ class ChapterIntroScreen extends StatefulWidget {
 
 class _ChapterIntroScreenState extends State<ChapterIntroScreen> with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
-
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 3500));
-    _ctrl.forward().then((_) {
-      if (mounted) context.read<GameState>().dismissChapterIntro();
-    });
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 3000));
+    _ctrl.forward().then((_) { if (mounted) context.read<GameState>().dismissChapterIntro(); });
   }
-
   @override
   void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
-    final chapters = getChapters();
-    final ch = chapters.firstWhere((c) => c.number == widget.chapterNum);
+    final ch = getChapters().firstWhere((c) => c.number == widget.chapterNum);
     return Scaffold(
-      backgroundColor: const Color(0xFF050508),
+      backgroundColor: _bg,
       body: AnimatedBuilder(
         animation: _ctrl,
-        builder: (ctx, child) {
-          final t = _ctrl.value;
-          final fadeIn = Curves.easeIn.transform(t < 0.2 ? t / 0.2 : 1.0);
-          final fadeOut = t > 0.8 ? (1.0 - t) / 0.2 : 1.0;
-          final slideUp = (1.0 - Curves.easeOut.transform((t - 0.15).clamp(0.0, 0.3) / 0.3)).clamp(0.0, 1.0) * 30;
+        builder: (_, __) {
+          final fi = Curves.easeIn.transform((_ctrl.value / 0.2).clamp(0, 1));
+          final fo = _ctrl.value > 0.75 ? 1 - (_ctrl.value - 0.75) / 0.25 : 1.0;
           return Opacity(
-            opacity: (fadeIn * fadeOut).clamp(0.0, 1.0),
+            opacity: (fi * fo).clamp(0, 1),
             child: Center(
-              child: Padding(
-                padding: EdgeInsets.only(bottom: slideUp),
-                child: child,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(color: _accent.withOpacity(0.15), borderRadius: BorderRadius.circular(16)),
+                    child: Text('ГЛАВА ${widget.chapterNum}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _accent, letterSpacing: 3)),
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 48),
+                    child: Text(ch.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: _text1, height: 1.2)),
+                  ),
+                  const SizedBox(height: 14),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 56),
+                    child: Text(ch.description, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: _text2, height: 1.5)),
+                  ),
+                ],
               ),
             ),
           );
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF00D4AA).withOpacity(0.3)),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'ГЛАВА ${widget.chapterNum}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 4,
-                  color: Color(0xFF00D4AA),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════
+// BOTTOM NAVIGATION — Telegram style
+// ═══════════════════════════════════════════
+
+class _TGBottomNav extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  const _TGBottomNav({required this.currentIndex, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final labels = ['Чаты', 'Улики', 'Звонки', 'Ещё'];
+    final icons = [Icons.chat_bubble_outline, Icons.fact_check, Icons.phone_outlined, Icons.more_horiz];
+    return Container(
+      decoration: const BoxDecoration(color: _header, border: Border(top: BorderSide(color: _divider, width: 0.5))),
+      child: SafeArea(
+        child: SizedBox(
+          height: 56,
+          child: Row(
+            children: List.generate(4, (i) {
+              final active = i == currentIndex;
+              return Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => onTap(i),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(icons[i], size: 22, color: active ? _accent : _text2),
+                        const SizedBox(height: 2),
+                        Text(labels[i], style: TextStyle(fontSize: 10, color: active ? _accent : _text2, fontWeight: active ? FontWeight.w600 : FontWeight.w400)),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: 280,
-              child: Text(
-                ch.title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 1,
-                  height: 1.2,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: 260,
-              child: Text(
-                ch.description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF6A6A7A),
-                  height: 1.5,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ],
+              );
+            }),
+          ),
         ),
       ),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CHATS LIST SCREEN — WhatsApp-style
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// CHAT LIST — Telegram style
+// ═══════════════════════════════════════════
 
 class ChatsListScreen extends StatelessWidget {
   const ChatsListScreen({super.key});
@@ -374,168 +270,194 @@ class ChatsListScreen extends StatelessWidget {
     final visible = chars.where((c) => !c.isHidden || gs.isCharUnlocked(c.id)).toList();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SHADOWCHAT', style: TextStyle(
-          fontWeight: FontWeight.w900,
-          fontSize: 20,
-          color: Color(0xFF00D4AA),
-          letterSpacing: 4,
-        )),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: const Color(0xFF1A1A28),
-              child: Text('?', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.5))),
-            ),
+        titleSpacing: 0,
+        title: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Expanded(child: _TGSearchField()),
+              const SizedBox(width: 8),
+              _TGHamburgerButton(),
+            ],
           ),
-        ],
+        ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Color(0xFF1A1A28), width: 0.5)),
-        ),
-        child: ListView.separated(
-          padding: EdgeInsets.zero,
-          itemCount: visible.length,
-          separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFF12121C)),
-          itemBuilder: (ctx, i) {
-            final c = visible[i];
-            final msgs = getMessagesFor(c.id).where((m) => m.chapter <= gs.maxUnlockedChapter && !m.isSystem).toList();
-            final lastMsg = msgs.isNotEmpty ? msgs.last : null;
-            final hasNew = msgs.any((m) => !gs.hasSeen(m.id) && m.fromId != 'player');
-            return _ChatTile(character: c, lastMsg: lastMsg, hasNew: hasNew, onTap: () => gs.openChat(c.id));
-          },
-        ),
+      body: ListView.builder(
+        itemCount: visible.length,
+        itemBuilder: (ctx, i) {
+          final c = visible[i];
+          final msgs = getMessagesFor(c.id).where((m) => m.chapter <= gs.maxUnlockedChapter && !m.isSystem).toList();
+          final last = msgs.isNotEmpty ? msgs.last : null;
+          final hasNew = msgs.any((m) => !gs.hasSeen(m.id) && m.fromId != 'player');
+          final unreadCount = msgs.where((m) => !gs.hasSeen(m.id) && m.fromId != 'player').length;
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => gs.openChat(c.id),
+              child: Column(
+                children: [
+                  _TGChatListItem(character: c, lastMsg: last, hasNew: hasNew, unreadCount: unreadCount),
+                  const Divider(height: 1, color: _divider, indent: 76, endIndent: 16),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-class _ChatTile extends StatelessWidget {
+class _TGSearchField extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 36,
+      decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(22)),
+      child: Row(
+        children: const [
+          SizedBox(width: 12),
+          Icon(Icons.search, size: 18, color: _text2),
+          SizedBox(width: 8),
+          Text('Поиск', style: TextStyle(fontSize: 15, color: _text2)),
+        ],
+      ),
+    );
+  }
+}
+
+class _TGHamburgerButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(22)),
+      child: const Icon(Icons.menu, size: 20, color: _text1),
+    );
+  }
+}
+
+class _TGChatListItem extends StatelessWidget {
   final ChatCharacter character;
   final ChatMsg? lastMsg;
   final bool hasNew;
-  final VoidCallback onTap;
+  final int unreadCount;
 
-  const _ChatTile({required this.character, required this.lastMsg, required this.hasNew, required this.onTap});
+  const _TGChatListItem({required this.character, required this.lastMsg, required this.hasNew, required this.unreadCount});
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    return InkWell(
-      onTap: onTap,
-      splashColor: const Color(0xFF00D4AA).withOpacity(0.05),
-      highlightColor: const Color(0xFF00D4AA).withOpacity(0.03),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            // Avatar
-            Stack(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: character.avatarColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(26),
-                    border: Border.all(color: character.avatarColor.withOpacity(0.2), width: 1),
-                  ),
-                  child: Center(
-                    child: Text(
-                      character.avatarEmoji,
-                      style: TextStyle(fontSize: 22, color: character.avatarColor),
+    return Container(
+      padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar
+          Stack(
+            children: [
+              _TGAvatar(emoji: character.avatarEmoji, color: character.avatarColor),
+              if (character.isOnline)
+                Positioned(right: 1, bottom: 1,
+                  child: Container(width: 14, height: 14,
+                    decoration: BoxDecoration(color: _bg, shape: BoxShape.circle),
+                    child: Center(
+                      child: Container(width: 10, height: 10,
+                        decoration: const BoxDecoration(color: _green, shape: BoxShape.circle),
+                      ),
                     ),
                   ),
                 ),
-                if (character.isOnline)
-                  Positioned(
-                    right: 1,
-                    bottom: 1,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF00D4AA),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF0A0A10), width: 2),
+            ],
+          ),
+          const SizedBox(width: 12),
+          // Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Row: Name + Time
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(character.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: hasNew ? _text1 : _text1)),
+                    ),
+                    Text(timeStr, style: TextStyle(fontSize: 12, color: hasNew ? _accent : _text3)),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                // Row: Message preview + Badge
+                Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          if (lastMsg != null && lastMsg!.fromId == 'player')
+                            Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Icon(Icons.done_all, size: 14, color: hasNew ? _accent : _text3),
+                            ),
+                          Expanded(
+                            child: Text(
+                              lastMsg?.text ?? 'Начните расследование...',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 14, color: hasNew ? _text1 : _text2),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                    if (hasNew && unreadCount > 0)
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        decoration: BoxDecoration(color: _unreadBadge, borderRadius: BorderRadius.circular(12)),
+                        child: Center(
+                          child: Text('$unreadCount', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(width: 14),
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          character.name,
-                          style: TextStyle(
-                            fontWeight: hasNew ? FontWeight.w700 : FontWeight.w600,
-                            fontSize: 15,
-                            color: hasNew ? Colors.white : const Color(0xFFBBBBCC),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        timeStr,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: hasNew ? const Color(0xFF00D4AA) : const Color(0xFF3A3A4A),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      if (hasNew)
-                        Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF00D4AA),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      Expanded(
-                        child: Text(
-                          lastMsg?.text ?? 'Начните расследование...',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: hasNew ? const Color(0xFF8888AA) : const Color(0xFF3A3A4A),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CHAT SCREEN — Duskwood-style messaging
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// TG AVATAR
+// ═══════════════════════════════════════════
+
+class _TGAvatar extends StatelessWidget {
+  final String emoji;
+  final Color color;
+  final double size;
+
+  const _TGAvatar({required this.emoji, required this.color, this.size = 54});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size, height: size,
+      decoration: BoxDecoration(color: _surface, shape: BoxShape.circle),
+      child: Center(child: Text(emoji, style: TextStyle(fontSize: size * 0.38, color: color))),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════
+// CHAT SCREEN — Telegram style
+// ═══════════════════════════════════════════
 
 class ChatScreen extends StatefulWidget {
   final String charId;
@@ -555,6 +477,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    _loadMessages();
+  }
+
+  void _loadMessages() {
     final gs = context.read<GameState>();
     _visibleMsgs = getMessagesFor(widget.charId)
         .where((m) => m.chapter <= gs.maxUnlockedChapter && !m.isSystem)
@@ -565,212 +491,132 @@ class _ChatScreenState extends State<ChatScreen> {
   void _scheduleMessages() {
     final gs = context.read<GameState>();
     _msgTimer?.cancel();
-    int delay = 400;
+    int delay = 300;
     for (final msg in _visibleMsgs) {
       final d = delay;
-      delay += (msg.delayMs > 0 ? msg.delayMs : 800);
+      delay += (msg.delayMs > 0 ? msg.delayMs : 900);
       if (msg.fromId != 'player' && !gs.hasSeen(msg.id)) {
         Future.delayed(Duration(milliseconds: d), () {
           if (!mounted) return;
           gs.setTyping(true);
-          Future.delayed(Duration(milliseconds: 1200 + Random().nextInt(800)), () {
+          Future.delayed(Duration(milliseconds: 1000 + Random().nextInt(600)), () {
             if (!mounted) return;
             gs.setTyping(false);
             gs.markSeen(msg.id);
             _processSystemFor(msg, gs);
             setState(() {});
-            _scrollToBottom();
-            _checkForChoices(gs);
+            _scrollBottom();
+            _checkChoices(gs);
           });
         });
       }
     }
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) _checkForChoices(gs);
-    });
+    Future.delayed(const Duration(milliseconds: 100), () { if (mounted) _checkChoices(gs); });
   }
 
   void _processSystemFor(ChatMsg msg, GameState gs) {
-    final allMsgs = getMessagesFor(widget.charId);
-    final idx = allMsgs.indexOf(msg);
+    final all = getMessagesFor(widget.charId);
+    final idx = all.indexOf(msg);
     for (int i = 0; i <= idx; i++) {
-      final m = allMsgs[i];
+      final m = all[i];
       if (m.isSystem && m.chapter <= gs.maxUnlockedChapter) {
-        if (m.text.startsWith('CONTACT_UNLOCK:')) {
-          gs.unlockChar(m.text.split(':')[1]);
-        } else if (m.text.startsWith('EVIDENCE:')) {
-          gs.addEvidence(m.text.split(':')[1]);
-        }
+        if (m.text.startsWith('CONTACT_UNLOCK:')) gs.unlockChar(m.text.split(':')[1]);
+        else if (m.text.startsWith('EVIDENCE:')) gs.addEvidence(m.text.split(':')[1]);
       }
     }
   }
 
-  void _checkForChoices(GameState gs) {
+  void _checkChoices(GameState gs) {
     for (final msg in _visibleMsgs) {
-      if (msg.playerChoices != null && msg.fromId == 'player' && !gs.hasSeen('choice_${msg.id}') && gs.hasSeen(_getPrevMsgId(msg))) {
+      if (msg.playerChoices != null && msg.fromId == 'player' && !gs.hasSeen('choice_${msg.id}') && gs.hasSeen(_prevId(msg))) {
         if (mounted) setState(() { _showChoices = true; _pendingChoiceMsg = msg; });
         return;
       }
     }
   }
 
-  String _getPrevMsgId(ChatMsg msg) {
+  String _prevId(ChatMsg msg) {
     final all = getMessagesFor(widget.charId);
     final idx = all.indexOf(msg);
-    if (idx > 0) return all[idx - 1].id;
-    return '';
+    return idx > 0 ? all[idx - 1].id : '';
   }
 
   void _onChoiceTap(String choice) {
     final gs = context.read<GameState>();
     gs.markSeen('choice_${_pendingChoiceMsg!.id}');
     gs.markSeen(_pendingChoiceMsg!.id);
-    setState(() {
-      _selectedChoiceText = choice;
-      _showChoices = false;
-      _pendingChoiceMsg = null;
-    });
-    _scrollToBottom();
-    Future.delayed(const Duration(milliseconds: 600), () {
+    setState(() { _selectedChoiceText = choice; _showChoices = false; _pendingChoiceMsg = null; });
+    _scrollBottom();
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
-      setState(() {
-        _visibleMsgs = getMessagesFor(widget.charId)
-            .where((m) => m.chapter <= gs.maxUnlockedChapter && !m.isSystem)
-            .toList();
-      });
+      setState(() { _visibleMsgs = getMessagesFor(widget.charId).where((m) => m.chapter <= gs.maxUnlockedChapter && !m.isSystem).toList(); });
       _scheduleMessages();
     });
   }
 
-  void _scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 150), () {
-      if (_scrollCtrl.hasClients) {
-        _scrollCtrl.animateTo(
-          _scrollCtrl.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-        );
-      }
+  void _scrollBottom() {
+    Future.delayed(const Duration(milliseconds: 120), () {
+      if (_scrollCtrl.hasClients) _scrollCtrl.animateTo(_scrollCtrl.position.maxScrollExtent, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
     });
   }
 
   @override
-  void dispose() {
-    _msgTimer?.cancel();
-    _scrollCtrl.dispose();
-    super.dispose();
-  }
+  void dispose() { _msgTimer?.cancel(); _scrollCtrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
     final gs = context.watch<GameState>();
     final char = getCharacters().firstWhere((c) => c.id == widget.charId);
-
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => gs.closeChat(),
-        ),
+        leading: IconButton(icon: const Icon(Icons.arrow_back, size: 22), onPressed: () => gs.closeChat()),
         titleSpacing: 4,
-        title: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: char.avatarColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: char.avatarColor.withOpacity(0.2), width: 0.5),
+        title: InkWell(
+          onTap: () => _showProfile(char),
+          child: Row(
+            children: [
+              _TGAvatar(emoji: char.avatarEmoji, color: char.avatarColor, size: 40),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(char.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, height: 1.2)),
+                  if (gs.isTyping)
+                    const Text('печатает...', style: TextStyle(fontSize: 12, color: _accent, height: 1.2))
+                  else
+                    Text(char.isOnline ? 'в сети' : 'был(а) недавно', style: TextStyle(fontSize: 12, color: char.isOnline ? _green : _text2, height: 1.2)),
+                ],
               ),
-              child: Center(
-                child: Text(char.avatarEmoji, style: TextStyle(fontSize: 15, color: char.avatarColor)),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(char.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, height: 1.2)),
-                Text(
-                  char.isOnline ? 'в сети' : 'был(а) недавно',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: char.isOnline ? const Color(0xFF00D4AA) : const Color(0xFF4A4A5A),
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.call_outlined, size: 20, color: Color(0xFF5A5A6A)),
-            onPressed: () => _makeCall(char),
-          ),
-          const SizedBox(width: 4),
-          IconButton(
-            icon: const Icon(Icons.more_vert, size: 20, color: Color(0xFF5A5A6A)),
-            onPressed: () => _showProfile(char),
-          ),
-          const SizedBox(width: 4),
+          IconButton(icon: const Icon(Icons.call_outlined, size: 21), onPressed: () => _makeCall(char)),
+          IconButton(icon: const Icon(Icons.more_vert, size: 21), onPressed: () => _showProfile(char)),
         ],
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF0A0A10),
-        ),
+        color: const Color(0xFF0E1621),
         child: Column(
           children: [
             Expanded(
-              child: gs.isTyping
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TypingIndicator(charColor: char.avatarColor),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'печатает',
-                            style: TextStyle(color: Color(0xFF4A4A5A), fontSize: 12, letterSpacing: 0.5),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollCtrl,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      itemCount: _visibleMsgs.length + 1,
-                      itemBuilder: (ctx, i) {
-                        if (i == 0) return const SizedBox(height: 8);
-                        final msg = _visibleMsgs[i - 1];
-                        if (!gs.hasSeen(msg.id) && msg.fromId != 'player') {
-                          return const SizedBox.shrink();
-                        }
-                        if (msg.fromId == 'player') {
-                          if (msg.playerChoices != null && !gs.hasSeen('choice_${msg.id}')) {
-                            return const SizedBox.shrink();
-                          }
-                          if (msg.playerChoices != null && gs.hasSeen('choice_${msg.id}')) {
-                            return _MessageBubble(
-                              msg: ChatMsg(
-                                id: msg.id,
-                                fromId: 'player',
-                                text: _selectedChoiceText,
-                                chapter: msg.chapter,
-                              ),
-                              character: char,
-                              gs: gs,
-                            );
-                          }
-                        }
-                        return _MessageBubble(msg: msg, character: char, gs: gs);
-                      },
-                    ),
+              child: ListView.builder(
+                controller: _scrollCtrl,
+                padding: const EdgeInsets.only(top: 8, bottom: 8),
+                itemCount: _visibleMsgs.length,
+                itemBuilder: (ctx, i) {
+                  final msg = _visibleMsgs[i];
+                  if (!gs.hasSeen(msg.id) && msg.fromId != 'player') return const SizedBox.shrink();
+                  if (msg.fromId == 'player' && msg.playerChoices != null && !gs.hasSeen('choice_${msg.id}')) return const SizedBox.shrink();
+                  if (msg.fromId == 'player' && msg.playerChoices != null && gs.hasSeen('choice_${msg.id}')) {
+                    return _TGBubble(msg: ChatMsg(id: msg.id, fromId: 'player', text: _selectedChoiceText, chapter: msg.chapter), charColor: char.avatarColor);
+                  }
+                  return _TGBubble(msg: msg, charColor: char.avatarColor);
+                },
+              ),
             ),
             if (_showChoices && _pendingChoiceMsg != null)
-              _ChoicePanel(choices: _pendingChoiceMsg!.playerChoices!, onTap: _onChoiceTap),
+              _TGChoicePanel(choices: _pendingChoiceMsg!.playerChoices!, onTap: _onChoiceTap),
           ],
         ),
       ),
@@ -781,14 +627,10 @@ class _ChatScreenState extends State<ChatScreen> {
     final gs = context.read<GameState>();
     final call = getPhoneCalls().where((c) => c.callerId == char.id && c.chapter <= gs.maxUnlockedChapter).lastOrNull;
     if (call == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Нет звонков от ${char.name}'),
-          backgroundColor: const Color(0xFF1A1A28),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Нет доступных звонков'), backgroundColor: _surface,
+        behavior: SnackBarBehavior.floating, shape: StadiumBorder(),
+      ));
       return;
     }
     Navigator.push(context, MaterialPageRoute(builder: (_) => CallScreen(call: call, character: char)));
@@ -797,542 +639,377 @@ class _ChatScreenState extends State<ChatScreen> {
   void _showProfile(ChatCharacter char) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0E0E16),
+      backgroundColor: _bg,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => _ProfileSheet(character: char),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => _TGProfileSheet(character: char),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// TYPING INDICATOR — Animated dots
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// WALLPAPER PATTERN
+// ═══════════════════════════════════════════
 
-class TypingIndicator extends StatefulWidget {
-  final Color charColor;
-  const TypingIndicator({super.key, required this.charColor});
+class _WallpaperPainter extends CustomPainter {
   @override
-  State<TypingIndicator> createState() => _TypingIndicatorState();
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = const Color(0xFF131C26);
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+    final p2 = Paint()..color = const Color(0xFF0E1621);
+    for (int x = 0; x < size.width; x += 40) {
+      for (int y = 0; y < size.height; y += 40) {
+        canvas.drawRect(Rect.fromLTWH(x + 1, y + 1, 38, 38), p2);
+      }
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _TypingIndicatorState extends State<TypingIndicator> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
+// ═══════════════════════════════════════════
+// TG MESSAGE BUBBLE — Pixel perfect Telegram
+// ═══════════════════════════════════════════
 
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat();
-  }
-
-  @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161622),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(3, (i) {
-          return AnimatedBuilder(
-            animation: _ctrl,
-            builder: (_, __) {
-              final delay = i * 0.2;
-              final t = (_ctrl.value - delay) % 1.0;
-              final scale = 0.6 + 0.4 * sin(t * pi * 2);
-              final opacity = 0.3 + 0.7 * sin(t * pi * 2);
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                child: Transform.scale(
-                  scale: scale.clamp(0.5, 1.2),
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: widget.charColor.withOpacity(opacity.clamp(0.2, 1.0)),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        }),
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// MESSAGE BUBBLE — Polished
-// ═══════════════════════════════════════════════════════════════
-
-class _MessageBubble extends StatelessWidget {
+class _TGBubble extends StatelessWidget {
   final ChatMsg msg;
-  final ChatCharacter character;
-  final GameState gs;
+  final Color charColor;
 
-  const _MessageBubble({required this.msg, required this.character, required this.gs});
+  const _TGBubble({required this.msg, required this.charColor});
 
   @override
   Widget build(BuildContext context) {
     final isMe = msg.fromId == 'player';
-    final hour = 22 + (msg.chapter - 1);
+    final hour = (22 + msg.chapter - 1).clamp(0, 23);
     final minute = 15 + (msg.id.hashCode % 45);
-    final timeLabel = '${hour.clamp(0, 23)}:${minute.toString().padLeft(2, '0')}';
+    final time = '$hour:${minute.toString().padLeft(2, '0')}';
 
     if (msg.isDeleted) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
+        padding: EdgeInsets.only(
+          left: isMe ? 48 : 8, right: isMe ? 8 : 48, top: 1, bottom: 1,
+        ),
         child: Align(
           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF161622).withOpacity(0.5),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Text(
-              'Сообщение удалено',
-              style: TextStyle(color: Color(0xFF3A3A4A), fontStyle: FontStyle.italic, fontSize: 13),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: const Text('Сообщение удалено', style: TextStyle(color: _text2, fontStyle: FontStyle.italic, fontSize: 14)),
           ),
         ),
       );
     }
 
+    // Check if this message has an image or voice
+    final hasMedia = msg.imageUrl != null || msg.voiceNoteText != null;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+      padding: EdgeInsets.only(
+        left: isMe ? 64 : 8, right: isMe ? 8 : 64, top: 1, bottom: 1,
+      ),
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
-          margin: EdgeInsets.only(
-            left: isMe ? 40 : 4,
-            right: isMe ? 4 : 40,
-          ),
-          child: Column(
-            crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 10,
-                  bottom: msg.imageUrl != null || msg.voiceNoteText != null ? 8 : 4,
-                ),
-                decoration: BoxDecoration(
-                  gradient: isMe
-                      ? LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFF00D4AA).withOpacity(0.18),
-                            const Color(0xFF0088CC).withOpacity(0.12),
-                          ],
-                        )
-                      : null,
-                  color: isMe ? null : const Color(0xFF161622),
-                  borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(18),
-                    topRight: const Radius.circular(18),
-                    bottomLeft: Radius.circular(isMe ? 18 : 4),
-                    bottomRight: Radius.circular(isMe ? 4 : 18),
-                  ),
-                  border: isMe
-                      ? Border.all(color: const Color(0xFF00D4AA).withOpacity(0.1), width: 0.5)
-                      : null,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (msg.imageUrl != null) ...[
-                      _buildImage(msg.imageUrl!),
-                      if (msg.text.isNotEmpty) const SizedBox(height: 8),
-                    ],
-                    if (msg.voiceNoteText != null) ...[
-                      _buildVoiceNote(msg.voiceNoteText!),
-                      if (msg.text.isNotEmpty) const SizedBox(height: 8),
-                    ],
-                    if (msg.text.isNotEmpty)
-                      Text(
-                        msg.text,
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          color: isMe ? const Color(0xFFCCFFE8) : const Color(0xFFDDDDEE),
-                          height: 1.4,
-                          letterSpacing: 0.1,
-                        ),
-                      ),
-                    const SizedBox(height: 2),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          timeLabel,
-                          style: const TextStyle(fontSize: 10, color: Color(0xFF4A4A5A)),
-                        ),
-                        if (isMe) ...[
-                          const SizedBox(width: 4),
-                          Icon(Icons.done_all, size: 14, color: const Color(0xFF00D4AA).withOpacity(0.6)),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImage(String url) {
-    final configs = {
-      'tax_docs': const _ImgConfig(
-        icon: Icons.description_outlined,
-        gradient: [Color(0xFF1A237E), Color(0xFF0D0D1A)],
-        label: 'Налоговые документы "Уголёк"',
-        sublabel: 'Фотокопия • 2 страницы',
-      ),
-      'cafe_night': const _ImgConfig(
-        icon: Icons.night_shelter,
-        gradient: [Color(0xFF1A1A2E), Color(0xFF000000)],
-        label: 'Кафе "Уголёк". 23:00',
-        sublabel: 'Свет в офисе Виктора',
-      ),
-      'smirnov_threat': const _ImgConfig(
-        icon: Icons.mic_outlined,
-        gradient: [Color(0xFF2A0A0A), Color(0xFF0D0D0D)],
-        label: 'Запись разговора',
-        sublabel: 'Аудиофайл • 28 сек',
-      ),
-      'ally_view': const _ImgConfig(
-        icon: Icons.location_city,
-        gradient: [Color(0xFF0D1B0D), Color(0xFF050505)],
-        label: 'Вид из окна Наташи',
-        sublabel: 'Переулок за кафе',
-      ),
-    };
-    final cfg = configs[url] ?? _ImgConfig(
-      icon: Icons.image_outlined,
-      gradient: const [Color(0xFF1A1A2E), Color(0xFF0D0D0D)],
-      label: url,
-      sublabel: '',
-    );
-
-    return Container(
-      height: 170,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: cfg.gradient),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05), width: 0.5),
-      ),
-      child: Stack(
-        children: [
-          // Decorative grid overlay
-          Positioned.fill(
-            child: CustomPaint(painter: _GridPainter()),
-          ),
-          Center(
-            child: Icon(cfg.icon, size: 52, color: Colors.white.withOpacity(0.08)),
-          ),
-          // Photo frame corners
-          Positioned(top: 8, left: 8, child: _corner(true, true)),
-          Positioned(top: 8, right: 8, child: _corner(true, false)),
-          Positioned(bottom: 8, left: 8, child: _corner(false, true)),
-          Positioned(bottom: 8, right: 8, child: _corner(false, false)),
-          // Label
-          Positioned(
-            left: 10,
-            right: 10,
-            bottom: 10,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.65),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(cfg.label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-                  if (cfg.sublabel.isNotEmpty)
-                    Text(cfg.sublabel, style: const TextStyle(color: Colors.white54, fontSize: 10)),
-                ],
-              ),
+        child: CustomPaint(
+          painter: _BubblePainter(isMe: isMe),
+          child: Container(
+            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75 - 40),
+            padding: EdgeInsets.fromLTRB(
+              isMe ? 12 : 10,
+              hasMedia ? 4 : 7,
+              isMe ? 8 : 10,
+              hasMedia ? 4 : 7,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _corner(bool top, bool left) {
-    return Container(
-      width: 14,
-      height: 14,
-      decoration: BoxDecoration(
-        border: Border(
-          top: top ? const BorderSide(color: Color(0xFF00D4AA), width: 1.5) : BorderSide.none,
-          bottom: !top ? const BorderSide(color: Color(0xFF00D4AA), width: 1.5) : BorderSide.none,
-          left: left ? const BorderSide(color: Color(0xFF00D4AA), width: 1.5) : BorderSide.none,
-          right: !left ? const BorderSide(color: Color(0xFF00D4AA), width: 1.5) : BorderSide.none,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVoiceNote(String text) {
-    final secs = text.length * 2;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFF00D4AA).withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.play_arrow, color: Color(0xFF00D4AA), size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  height: 16,
-                  child: CustomPaint(
-                    painter: _WaveformPainter(),
-                    size: Size.infinite,
-                  ),
-                ),
+                // Image
+                if (msg.imageUrl != null) ...[
+                  _TGPhotoBlock(imageUrl: msg.imageUrl!),
+                  if (msg.text.isNotEmpty) const SizedBox(height: 4),
+                ],
+                // Voice
+                if (msg.voiceNoteText != null) ...[
+                  _TGVoiceBlock(),
+                  if (msg.text.isNotEmpty) const SizedBox(height: 4),
+                ],
+                // Text
+                if (msg.text.isNotEmpty)
+                  Text(msg.text, style: const TextStyle(fontSize: 15, color: _text1, height: 1.35)),
+                // Time + checks
                 const SizedBox(height: 2),
-                Text(
-                  '0:${secs.toString().padLeft(2, '0')}',
-                  style: const TextStyle(fontSize: 10, color: Color(0xFF4A4A5A)),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(time, style: TextStyle(fontSize: 11, color: isMe ? const Color(0xFF8EACBB) : _text2)),
+                    if (isMe) ...[
+                      const SizedBox(width: 3),
+                      const Icon(Icons.done_all, size: 14, color: Color(0xFF4FAE4E)),
+                    ],
+                  ],
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════
+// BUBBLE PAINTER — Telegram bubble shape
+// ═══════════════════════════════════════════
+
+class _BubblePainter extends CustomPainter {
+  final bool isMe;
+  const _BubblePainter({required this.isMe});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = isMe ? _outBubble : _surface;
+    final r = 12.0;
+    final w = size.width;
+    final h = size.height;
+    final path = Path();
+    if (isMe) {
+      // Outgoing: tail bottom-right
+      path.moveTo(r, 0);
+      path.lineTo(w - r, 0);
+      path.arcToPoint(Offset(w, r), radius: Radius.circular(r));
+      path.lineTo(w, h - r - 6);
+      path.quadraticBezierTo(w, h - 2, w - 6, h - 2);
+      path.lineTo(w - 10, h);
+      path.quadraticBezierTo(w - 2, h - 2, w - 2, h - r);
+      path.lineTo(w - r, h);
+      path.arcToPoint(Offset(w - r - r, h), radius: Radius.circular(r), clockwise: false);
+      path.lineTo(r, h);
+      path.arcToPoint(Offset(0, h - r), radius: Radius.circular(r));
+      path.lineTo(0, r);
+      path.arcToPoint(Offset(r, 0), radius: Radius.circular(r));
+    } else {
+      // Incoming: tail bottom-left
+      path.moveTo(r, 0);
+      path.lineTo(w - r, 0);
+      path.arcToPoint(Offset(w, r), radius: Radius.circular(r));
+      path.lineTo(w, h - r);
+      path.arcToPoint(Offset(w - r, h), radius: Radius.circular(r));
+      path.lineTo(r + 2, h);
+      path.arcToPoint(Offset(2, h - r), radius: Radius.circular(r));
+      path.lineTo(2, h - r);
+      path.quadraticBezierTo(2, h - 2, 10, h);
+      path.lineTo(6, h - 2);
+      path.quadraticBezierTo(0, h - 2, 0, h - r - 6);
+      path.lineTo(0, r);
+      path.arcToPoint(Offset(r, 0), radius: Radius.circular(r));
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ═══════════════════════════════════════════
+// TG PHOTO BLOCK
+// ═══════════════════════════════════════════
+
+class _TGPhotoBlock extends StatelessWidget {
+  final String imageUrl;
+  const _TGPhotoBlock({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    IconData icon = Icons.image_outlined;
+    String label = imageUrl;
+    if (imageUrl == 'tax_docs') { icon = Icons.description_outlined; label = 'Налоговые документы "Уголёк"'; }
+    else if (imageUrl == 'cafe_night') { icon = Icons.night_shelter; label = 'Кафе "Уголёк". 23:00'; }
+    else if (imageUrl == 'smirnov_threat') { icon = Icons.mic_outlined; label = 'Запись разговора'; }
+    else if (imageUrl == 'ally_view') { icon = Icons.location_city; label = 'Вид из окна Наташи'; }
+    return Container(
+      height: 160, width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B2836),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(child: Icon(icon, size: 40, color: _text2.withOpacity(0.3))),
+          Positioned(
+            left: 8, right: 8, bottom: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), borderRadius: BorderRadius.circular(4)),
+              child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 11)),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _ImgConfig {
-  final IconData icon;
-  final List<Color> gradient;
-  final String label;
-  final String sublabel;
-  const _ImgConfig({required this.icon, required this.gradient, required this.label, required this.sublabel});
+// ═══════════════════════════════════════════
+// TG VOICE BLOCK
+// ═══════════════════════════════════════════
+
+class _TGVoiceBlock extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.play_circle_filled, size: 36, color: _accent),
+          const SizedBox(width: 8),
+          SizedBox(width: 180, height: 24, child: _TGWaveform()),
+          const SizedBox(width: 8),
+          const Text('0:24', style: TextStyle(fontSize: 11, color: _text2)),
+        ],
+      ),
+    );
+  }
 }
 
-class _GridPainter extends CustomPainter {
+class _TGWaveform extends StatelessWidget {
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.03)..strokeWidth = 0.5;
-    for (double x = 0; x < size.width; x += 20) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-    for (double y = 0; y < size.height; y += 20) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _WaveformPainter(),
+      size: const Size(180, 24),
+    );
   }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _WaveformPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = const Color(0xFF00D4AA)..strokeWidth = 1.5;
-    final path = Path();
     final rng = Random(42);
     for (double x = 0; x < size.width; x += 3) {
-      final h = (rng.nextDouble() * 0.7 + 0.3) * size.height;
+      final h = (rng.nextDouble() * 0.6 + 0.2) * size.height;
       final y = (size.height - h) / 2;
-      if (x == 0) path.moveTo(x, y);
-      else path.lineTo(x, y);
-      path.lineTo(x, y + h);
+      final paint = Paint()
+        ..color = (x < size.width * 0.35) ? _accent : _text2.withOpacity(0.4)
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(x, y), Offset(x, y + h), paint);
     }
-    canvas.drawPath(path, paint);
   }
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CHOICE PANEL — Response options
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// TG CHOICE PANEL — Quick reply bubbles
+// ═══════════════════════════════════════════
 
-class _ChoicePanel extends StatelessWidget {
+class _TGChoicePanel extends StatelessWidget {
   final List<String> choices;
   final Function(String) onTap;
-
-  _ChoicePanel({required this.choices, required this.onTap});
+  const _TGChoicePanel({required this.choices, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 16),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0C0C14),
-        border: Border(top: BorderSide(color: Color(0xFF1A1A28), width: 0.5)),
-      ),
+      padding: const EdgeInsets.fromLTRB(8, 6, 8, 12),
+      decoration: const BoxDecoration(color: _header, border: Border(top: BorderSide(color: _divider))),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8, left: 4),
-            child: Row(
-              children: [
-                Icon(Icons.reply, size: 14, color: const Color(0xFF00D4AA).withOpacity(0.5)),
-                const SizedBox(width: 6),
-                const Text(
-                  'Выберите ответ',
-                  style: TextStyle(fontSize: 11, color: Color(0xFF4A4A5A), fontWeight: FontWeight.w600, letterSpacing: 0.5),
+        children: choices.map((c) => Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => onTap(c),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                decoration: BoxDecoration(
+                  border: Border.all(color: _accent, width: 1),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              ],
-            ),
-          ),
-          ...choices.map((c) => Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => onTap(c),
-                borderRadius: BorderRadius.circular(14),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF161622),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFF2A2A38), width: 0.5),
-                  ),
-                  child: Text(
-                    c,
-                    style: const TextStyle(fontSize: 14, color: Color(0xFFCCCCEE), height: 1.3),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                child: Text(c, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: _accent, fontWeight: FontWeight.w500)),
               ),
             ),
-          )),
-          const SizedBox(height: 4),
-        ],
+          ),
+        )).toList(),
       ),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// PROFILE BOTTOM SHEET
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// TG PROFILE SHEET
+// ═══════════════════════════════════════════
 
-class _ProfileSheet extends StatelessWidget {
+class _TGProfileSheet extends StatelessWidget {
   final ChatCharacter character;
-  const _ProfileSheet({required this.character});
+  const _TGProfileSheet({required this.character});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(vertical: 20),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Handle
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: const Color(0xFF3A3A4A), borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 24),
-          // Avatar
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: character.avatarColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(40),
-              border: Border.all(color: character.avatarColor.withOpacity(0.3), width: 1.5),
-              boxShadow: [BoxShadow(color: character.avatarColor.withOpacity(0.1), blurRadius: 20)],
-            ),
-            child: Center(
-              child: Text(character.avatarEmoji, style: TextStyle(fontSize: 34, color: character.avatarColor)),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(character.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 6),
-          Text(character.phone, style: const TextStyle(fontSize: 13, color: Color(0xFF5A5A6A))),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: character.isOnline ? const Color(0xFF00D4AA).withOpacity(0.1) : const Color(0xFF1A1A28),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              character.isOnline ? 'В сети' : 'Не в сети',
-              style: TextStyle(
-                fontSize: 11,
-                color: character.isOnline ? const Color(0xFF00D4AA) : const Color(0xFF4A4A5A),
-              ),
-            ),
-          ),
+          Container(width: 36, height: 4, decoration: BoxDecoration(color: _text2.withOpacity(0.4), borderRadius: BorderRadius.circular(2))),
           const SizedBox(height: 20),
-          // Bio
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF161622),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              character.bio,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF8888AA), height: 1.5),
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00D4AA),
-                foregroundColor: const Color(0xFF050508),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 0,
-              ),
-              child: const Text('Закрыть', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            ),
-          ),
-          SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+          _TGAvatar(emoji: character.avatarEmoji, color: character.avatarColor, size: 80),
+          const SizedBox(height: 14),
+          Text(character.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text(character.isOnline ? 'в сети' : 'был(а) недавно', style: TextStyle(fontSize: 13, color: character.isOnline ? _green : _text2)),
+          const SizedBox(height: 16),
+          _TGProfileRow(icon: Icons.info_outline, label: 'Био', value: character.bio),
+          _TGProfileRow(icon: Icons.phone_outlined, label: 'Телефон', value: character.phone),
+          _TGProfileRow(icon: Icons.alternate_email, label: 'Имя пользователя', value: '@${character.id}user'),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// EVIDENCE BOARD — Card grid
-// ═══════════════════════════════════════════════════════════════
+class _TGProfileRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  const _TGProfileRow({required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: _text2),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 12, color: _accent)),
+                const SizedBox(height: 1),
+                Text(value, style: const TextStyle(fontSize: 15, color: _text1)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════
+// EVIDENCE BOARD — Telegram style
+// ═══════════════════════════════════════════
 
 class EvidenceBoardScreen extends StatelessWidget {
   const EvidenceBoardScreen({super.key});
@@ -1341,252 +1018,46 @@ class EvidenceBoardScreen extends StatelessWidget {
     final gs = context.watch<GameState>();
     final all = getEvidenceItems();
     final found = all.where((e) => e.chapterFound <= gs.maxUnlockedChapter).toList();
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Доска улик', style: TextStyle(fontWeight: FontWeight.w700)),
-        centerTitle: true,
-      ),
-      body: CustomScrollView(
-        slivers: [
-          // Progress header
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    const Color(0xFF00D4AA).withOpacity(0.08),
-                    const Color(0xFF0088CC).withOpacity(0.04),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF00D4AA).withOpacity(0.12)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00D4AA).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(Icons.fingerprint, color: Color(0xFF00D4AA), size: 24),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
+      appBar: AppBar(title: const Text('Доска улик', style: TextStyle(fontWeight: FontWeight.w600))),
+      body: found.isEmpty
+          ? const Center(child: Text('Улики пока не найдены', style: TextStyle(color: _text2, fontSize: 14)))
+          : ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              separatorBuilder: (_, __) => const Divider(height: 1, color: _divider, indent: 72),
+              itemCount: found.length,
+              itemBuilder: (ctx, i) {
+                final ev = found[i];
+                return InkWell(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Собрано улик', style: TextStyle(color: Color(0xFF5A5A6A), fontSize: 12, letterSpacing: 0.5)),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${found.length} из ${all.length}',
-                          style: const TextStyle(color: Color(0xFF00D4AA), fontSize: 26, fontWeight: FontWeight.w800),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    width: 52,
-                    height: 52,
-                    child: Stack(
-                      children: [
-                        CircularProgressIndicator(
-                          value: all.isEmpty ? 0 : found.length / all.length,
-                          strokeWidth: 4,
-                          backgroundColor: const Color(0xFF1A1A28),
-                          valueColor: const AlwaysStoppedAnimation(Color(0xFF00D4AA)),
-                        ),
-                        Center(
-                          child: Text(
-                            '${all.isEmpty ? 0 : (found.length * 100 ~/ all.length)}%',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF00D4AA)),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Container(
+                            width: 48, height: 48,
+                            decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(24)),
+                            child: Icon(ev.icon, size: 22, color: _accent),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Evidence cards
-          if (found.isEmpty)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 60),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(Icons.search_off, size: 48, color: Color(0xFF2A2A38)),
-                      SizedBox(height: 16),
-                      Text('Улики пока не найдены', style: TextStyle(color: Color(0xFF3A3A4A), fontSize: 14)),
-                      SizedBox(height: 4),
-                      Text('Продолжайте расследование', style: TextStyle(color: Color(0xFF2A2A38), fontSize: 12)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 0.85,
-              ),
-              delegate: SliverChildBuilderDelegate((ctx, i) {
-                final ev = found[i];
-                return _EvidenceCard(evidence: ev);
-              }, childCount: found.length),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-        ],
-      ),
-    );
-  }
-}
-
-class _EvidenceCard extends StatelessWidget {
-  final Evidence evidence;
-  const _EvidenceCard({required this.evidence});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = {
-      'ev_tax_docs': const Color(0xFF2196F3),
-      'ev_cafe_night': const Color(0xFF9C27B0),
-      'ev_smirnov': const Color(0xFFFF3366),
-      'ev_scream': const Color(0xFFFF9800),
-      'ev_victor_threat': const Color(0xFFF44336),
-      'ev_kira_msg': const Color(0xFF00D4AA),
-    };
-    final cardColor = colors[evidence.id] ?? const Color(0xFFFF9800);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF161622),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cardColor.withOpacity(0.15), width: 0.5),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: cardColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(evidence.icon, color: cardColor, size: 20),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              evidence.title,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              evidence.description,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF6A6A7A), height: 1.4),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0A0A10),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'Глава ${evidence.chapterFound}',
-                style: const TextStyle(fontSize: 10, color: Color(0xFF4A4A5A)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CALLS SCREEN
-// ═══════════════════════════════════════════════════════════════
-
-class CallsScreen extends StatelessWidget {
-  const CallsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    final gs = context.watch<GameState>();
-    final calls = getPhoneCalls().where((c) => c.chapter <= gs.maxUnlockedChapter).toList();
-    return Scaffold(
-      appBar: AppBar(title: const Text('Звонки', style: TextStyle(fontWeight: FontWeight.w700)), centerTitle: true),
-      body: calls.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.phone_disabled, size: 48, color: Color(0xFF2A2A38)),
-                  SizedBox(height: 16),
-                  Text('Пока нет звонков', style: TextStyle(color: Color(0xFF3A3A4A), fontSize: 14)),
-                ],
-              ),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFF12121C)),
-              itemCount: calls.length,
-              itemBuilder: (ctx, i) {
-                final call = calls[i];
-                final char = getCharacters().firstWhere((c) => c.id == call.callerId);
-                return InkWell(
-                  onTap: () => Navigator.push(ctx, MaterialPageRoute(builder: (_) => CallScreen(call: call, character: char))),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: char.avatarColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                          child: Center(child: Text(char.avatarEmoji, style: TextStyle(color: char.avatarColor, fontSize: 18))),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(char.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                              Text(ev.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                               const SizedBox(height: 2),
-                              Text(
-                                '${call.durationSec} сек • Глава ${call.chapter}',
-                                style: const TextStyle(fontSize: 12, color: Color(0xFF5A5A6A)),
-                              ),
+                              Text(ev.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: _text2, height: 1.3)),
+                              const SizedBox(height: 4),
+                              Text('Глава ${ev.chapterFound}', style: const TextStyle(fontSize: 12, color: _text3)),
                             ],
                           ),
                         ),
-                        Icon(
-                          call.isIncoming ? Icons.call_received : Icons.call_made,
-                          color: const Color(0xFF00D4AA),
-                          size: 18,
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Icon(Icons.chevron_right, size: 20, color: _text3),
                         ),
                       ],
                     ),
@@ -1598,9 +1069,67 @@ class CallsScreen extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CALL SCREEN — Improved
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// CALLS — Telegram style
+// ═══════════════════════════════════════════
+
+class CallsScreen extends StatelessWidget {
+  const CallsScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final gs = context.watch<GameState>();
+    final calls = getPhoneCalls().where((c) => c.chapter <= gs.maxUnlockedChapter).toList();
+    return Scaffold(
+      appBar: AppBar(title: const Text('Звонки', style: TextStyle(fontWeight: FontWeight.w600))),
+      body: calls.isEmpty
+          ? const Center(child: Text('Пока нет звонков', style: TextStyle(color: _text2, fontSize: 14)))
+          : ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              separatorBuilder: (_, __) => const Divider(height: 1, color: _divider, indent: 72),
+              itemCount: calls.length,
+              itemBuilder: (ctx, i) {
+                final call = calls[i];
+                final char = getCharacters().firstWhere((c) => c.id == call.callerId);
+                return InkWell(
+                  onTap: () => Navigator.push(ctx, MaterialPageRoute(builder: (_) => CallScreen(call: call, character: char))),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        _TGAvatar(emoji: char.avatarEmoji, color: char.avatarColor, size: 54),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(char.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Icon(call.isIncoming ? Icons.call_received : Icons.call_made, size: 16, color: call.isIncoming ? _green : _accent),
+                                  const SizedBox(width: 4),
+                                  Text('${call.durationSec} сек', style: const TextStyle(fontSize: 13, color: _text2)),
+                                  Text(' • ', style: TextStyle(fontSize: 13, color: _text2.withOpacity(0.5))),
+                                  Text('Сегодня', style: const TextStyle(fontSize: 13, color: _text2)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(icon: const Icon(Icons.call_outlined, size: 20, color: _accent), onPressed: () {}),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════
+// CALL SCREEN — Telegram style
+// ═══════════════════════════════════════════
 
 class CallScreen extends StatefulWidget {
   final PhoneCall call;
@@ -1610,152 +1139,58 @@ class CallScreen extends StatefulWidget {
   State<CallScreen> createState() => _CallScreenState();
 }
 
-class _CallScreenState extends State<CallScreen> with SingleTickerProviderStateMixin {
+class _CallScreenState extends State<CallScreen> {
   bool _isPlaying = false;
   double _progress = 0;
   Timer? _timer;
-  late AnimationController _pulseCtrl;
 
-  @override
-  void initState() {
-    super.initState();
-    _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
-  }
-
-  void _togglePlay() {
+  void _toggle() {
     setState(() => _isPlaying = !_isPlaying);
     if (_isPlaying) {
       _timer = Timer.periodic(const Duration(milliseconds: 100), (_) {
         if (!mounted) { _timer?.cancel(); return; }
-        setState(() {
-          _progress += 0.1 / widget.call.durationSec;
-          if (_progress >= 1.0) { _progress = 1.0; _isPlaying = false; _timer?.cancel(); }
-        });
+        setState(() { _progress += 0.1 / widget.call.durationSec; if (_progress >= 1) { _progress = 1; _isPlaying = false; _timer?.cancel(); } });
       });
-    } else {
-      _timer?.cancel();
-    }
+    } else { _timer?.cancel(); }
   }
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    _pulseCtrl.dispose();
-    super.dispose();
-  }
+  void dispose() { _timer?.cancel(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF060609),
-      appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 20), onPressed: () => Navigator.pop(context)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      backgroundColor: _bg,
+      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back, size: 22), onPressed: () => Navigator.pop(context))),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Avatar with pulse
-              AnimatedBuilder(
-                animation: _pulseCtrl,
-                builder: (_, __) => Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: widget.character.avatarColor.withOpacity(0.08 + 0.04 * _pulseCtrl.value),
-                    borderRadius: BorderRadius.circular(60),
-                    border: Border.all(
-                      color: widget.character.avatarColor.withOpacity(0.15 + 0.1 * _pulseCtrl.value),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: widget.character.avatarColor.withOpacity(0.08 * _pulseCtrl.value),
-                        blurRadius: 30,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      widget.character.avatarEmoji,
-                      style: TextStyle(fontSize: 48, color: widget.character.avatarColor),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(widget.character.name, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                decoration: BoxDecoration(
-                  color: widget.call.isIncoming
-                      ? const Color(0xFF00D4AA).withOpacity(0.1)
-                      : const Color(0xFF1A1A28),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  widget.call.isIncoming ? 'Входящий звонок' : 'Исходящий звонок',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: widget.call.isIncoming ? const Color(0xFF00D4AA) : const Color(0xFF5A5A6A),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text('${widget.call.durationSec} сек', style: const TextStyle(color: Color(0xFF3A3A4A), fontSize: 12)),
+              _TGAvatar(emoji: widget.character.avatarEmoji, color: widget.character.avatarColor, size: 100),
+              const SizedBox(height: 20),
+              Text(widget.character.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Text(widget.call.isIncoming ? 'Входящий' : 'Исходящий', style: const TextStyle(fontSize: 14, color: _text2)),
               const SizedBox(height: 40),
-              // Transcript
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF12121C),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF1A1A28), width: 0.5),
-                ),
+                decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(16)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.transcribe, size: 16, color: Color(0xFF5A5A6A)),
-                        const SizedBox(width: 8),
-                        const Text('Транскрипция', style: TextStyle(fontSize: 12, color: Color(0xFF5A5A6A), fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.call.transcript,
-                      style: const TextStyle(fontSize: 13.5, color: Color(0xFFAAAACC), height: 1.6, letterSpacing: 0.2),
-                    ),
+                    const Text('Транскрипция', style: TextStyle(fontSize: 13, color: _accent, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 10),
+                    Text(widget.call.transcript, style: const TextStyle(fontSize: 14, color: _text1, height: 1.5)),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-              // Progress
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: _progress,
-                  backgroundColor: const Color(0xFF1A1A28),
-                  valueColor: const AlwaysStoppedAnimation(Color(0xFF00D4AA)),
-                  minHeight: 3,
-                ),
-              ),
-              const SizedBox(height: 20),
-              IconButton(
-                icon: Icon(
-                  _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                  size: 56,
-                  color: const Color(0xFF00D4AA),
-                ),
-                onPressed: _togglePlay,
-              ),
+              ClipRRect(borderRadius: BorderRadius.circular(3), child: LinearProgressIndicator(value: _progress, backgroundColor: _surface, valueColor: const AlwaysStoppedAnimation(_accent), minHeight: 3)),
+              const SizedBox(height: 24),
+              IconButton(icon: Icon(_isPlaying ? Icons.pause_circle : Icons.play_circle, size: 56, color: _accent), onPressed: _toggle),
             ],
           ),
         ),
@@ -1764,9 +1199,9 @@ class _CallScreenState extends State<CallScreen> with SingleTickerProviderStateM
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CHAPTERS SCREEN — Story progress
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// CHAPTERS — Telegram settings style
+// ═══════════════════════════════════════════
 
 class ChaptersScreen extends StatelessWidget {
   const ChaptersScreen({super.key});
@@ -1775,101 +1210,43 @@ class ChaptersScreen extends StatelessWidget {
     final gs = context.watch<GameState>();
     final chapters = getChapters();
     return Scaffold(
-      appBar: AppBar(title: const Text('Сюжет', style: TextStyle(fontWeight: FontWeight.w700)), centerTitle: true),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      appBar: AppBar(title: const Text('Сюжет', style: TextStyle(fontWeight: FontWeight.w600))),
+      body: ListView.separated(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        separatorBuilder: (_, __) => const Divider(height: 1, color: _divider, indent: 72),
         itemCount: chapters.length,
         itemBuilder: (ctx, i) {
           final ch = chapters[i];
           final unlocked = ch.number <= gs.maxUnlockedChapter;
           final current = ch.number == gs.currentChapter;
           final completed = ch.number < gs.maxUnlockedChapter;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              decoration: BoxDecoration(
-                color: unlocked ? const Color(0xFF161622) : const Color(0xFF0E0E16),
-                borderRadius: BorderRadius.circular(16),
-                border: current ? Border.all(color: const Color(0xFF00D4AA), width: 1.5) : null,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: unlocked ? () => _openChapter(ctx, ch, gs) : null,
-                  borderRadius: BorderRadius.circular(16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
+          return InkWell(
+            onTap: unlocked ? () => _openChapter(ctx, ch, gs) : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  _TGAvatar(
+                    emoji: completed ? '✓' : '${ch.number}',
+                    color: completed ? _green : (current ? _accent : _text3),
+                    size: 54,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Chapter number
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: completed
-                                ? const Color(0xFF00D4AA)
-                                : (current ? const Color(0xFF00D4AA).withOpacity(0.15) : const Color(0xFF1A1A28)),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Center(
-                            child: completed
-                                ? const Icon(Icons.check, color: Color(0xFF050508), size: 22)
-                                : Text(
-                                    '${ch.number}',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                      color: unlocked ? const Color(0xFF00D4AA) : const Color(0xFF3A3A4A),
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        // Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                ch.title,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: unlocked ? Colors.white : const Color(0xFF3A3A4A),
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                ch.description,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: unlocked ? const Color(0xFF6A6A7A) : const Color(0xFF2A2A38),
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (!unlocked)
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0A0A10),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.lock, color: Color(0xFF2A2A38), size: 16),
-                          )
-                        else if (current)
-                          const Icon(Icons.chevron_right, color: Color(0xFF00D4AA), size: 20),
+                        Text(ch.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: unlocked ? _text1 : _text3)),
+                        const SizedBox(height: 2),
+                        Text(ch.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: unlocked ? _text2 : _text3)),
                       ],
                     ),
                   ),
-                ),
+                  if (!unlocked)
+                    const Icon(Icons.lock_outline, size: 18, color: _text3)
+                  else if (current)
+                    const Icon(Icons.chevron_right, size: 20, color: _text3),
+                ],
               ),
             ),
           );
@@ -1881,15 +1258,14 @@ class ChaptersScreen extends StatelessWidget {
   void _openChapter(BuildContext ctx, ChapterInfo ch, GameState gs) {
     if (ch.characterUnlock != null) gs.unlockChar(ch.characterUnlock!);
     if (ch.number == gs.maxUnlockedChapter) gs.advanceChapter(ch.number);
-    final charMap = {1: 'unknown', 2: 'darya', 3: 'unknown', 4: 'victor', 5: 'natasha', 6: 'andrey', 7: 'unknown', 8: 'kira', 9: 'max', 10: 'unknown'};
-    final targetChar = charMap[ch.number] ?? 'unknown';
+    final map = {1: 'unknown', 2: 'darya', 3: 'unknown', 4: 'victor', 5: 'natasha', 6: 'andrey', 7: 'unknown', 8: 'kira', 9: 'max', 10: 'unknown'};
     gs.showChapterIntro(ch.number);
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// MINI-GAMES SCREEN
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// MINI-GAMES
+// ═══════════════════════════════════════════
 
 class MiniGameScreen extends StatefulWidget {
   final MiniGameData game;
@@ -1901,68 +1277,40 @@ class MiniGameScreen extends StatefulWidget {
 class _MiniGameScreenState extends State<MiniGameScreen> {
   String? _result;
   bool _solved = false;
+  final _ctrl = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final gs = context.watch<GameState>();
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => gs.closeMiniGame(),
-        ),
-        title: Text(widget.game.title, style: const TextStyle(fontWeight: FontWeight.w700)),
-        centerTitle: true,
+        leading: IconButton(icon: const Icon(Icons.arrow_back, size: 22), onPressed: () => gs.closeMiniGame()),
+        title: Text(widget.game.title, style: const TextStyle(fontWeight: FontWeight.w600)),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Instruction
+            // Hint
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF161622),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF00D4AA).withOpacity(0.15)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.lightbulb_outline, color: Color(0xFF00D4AA), size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      widget.game.instruction,
-                      style: const TextStyle(fontSize: 13, color: Color(0xFFAAAACC), height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(12)),
+              child: Row(children: [
+                const Icon(Icons.lightbulb_outline, size: 20, color: _accent),
+                const SizedBox(width: 10),
+                Expanded(child: Text(widget.game.instruction, style: const TextStyle(fontSize: 14, color: _text2))),
+              ]),
             ),
-            const SizedBox(height: 24),
-            Expanded(child: _buildGameContent()),
+            const SizedBox(height: 20),
+            Expanded(child: _buildGame()),
             if (_result != null)
               Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(top: 16),
-                padding: const EdgeInsets.all(16),
+                width: double.infinity, margin: const EdgeInsets.only(top: 12), padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: _solved ? const Color(0xFF00D4AA).withOpacity(0.1) : const Color(0xFFFF3366).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: _solved ? const Color(0xFF00D4AA).withOpacity(0.3) : const Color(0xFFFF3366).withOpacity(0.3),
-                  ),
+                  color: _solved ? _green.withOpacity(0.1) : Colors.redAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  _result!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: _solved ? const Color(0xFF00D4AA) : const Color(0xFFFF3366),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                child: Text(_result!, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: _solved ? _green : Colors.redAccent, fontWeight: FontWeight.w500)),
               ),
           ],
         ),
@@ -1970,16 +1318,12 @@ class _MiniGameScreenState extends State<MiniGameScreen> {
     );
   }
 
-  Widget _buildGameContent() {
+  Widget _buildGame() {
     switch (widget.game.type) {
-      case 'cipher':
-        return _buildCipher();
-      case 'logic':
-        return _buildTimeline();
-      case 'final_choice':
-        return _buildFinalChoice();
-      default:
-        return const Center(child: Text('Мини-игра в разработке', style: TextStyle(color: Color(0xFF4A4A5A))));
+      case 'cipher': return _buildCipher();
+      case 'logic': return _buildTimeline();
+      case 'final_choice': return _buildFinalChoice();
+      default: return const Center(child: Text('В разработке', style: TextStyle(color: _text2)));
     }
   }
 
@@ -1987,142 +1331,63 @@ class _MiniGameScreenState extends State<MiniGameScreen> {
     final encrypted = widget.game.data['encrypted'] as String;
     final answer = widget.game.data['answer'] as String;
     final shift = widget.game.data['shift'] as int;
-    final controller = TextEditingController();
-
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0A0A10),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF2A2A38)),
-          ),
-          child: Column(
-            children: [
-              const Text('Зашифрованное сообщение', style: TextStyle(fontSize: 12, color: Color(0xFF5A5A6A))),
-              const SizedBox(height: 8),
-              Text(encrypted, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: 4, color: Color(0xFFFF9800))),
-              const SizedBox(height: 8),
-              Text('Шифр Цезаря, сдвиг: $shift', style: const TextStyle(fontSize: 11, color: Color(0xFF4A4A5A))),
-            ],
-          ),
+          width: double.infinity, padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(12)),
+          child: Column(children: [
+            const Text('Зашифрованное сообщение', style: TextStyle(fontSize: 12, color: _text2)),
+            const SizedBox(height: 8),
+            Text(encrypted, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, letterSpacing: 4, color: _accent)),
+            const SizedBox(height: 6),
+            Text('Шифр Цезаря, сдвиг $shift', style: const TextStyle(fontSize: 11, color: _text3)),
+          ]),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         TextField(
-          controller: controller,
-          style: const TextStyle(color: Colors.white, fontSize: 18, letterSpacing: 3),
+          controller: _ctrl,
+          style: const TextStyle(color: _text1, fontSize: 16, letterSpacing: 2),
           textAlign: TextAlign.center,
           decoration: InputDecoration(
-            hintText: 'Введите расшифровку...',
-            hintStyle: const TextStyle(color: Color(0xFF3A3A4A)),
-            filled: true,
-            fillColor: const Color(0xFF161622),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF2A2A38)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF2A2A38)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF00D4AA), width: 1.5),
-            ),
+            hintText: 'Введите ответ...',
+            hintStyle: const TextStyle(color: _text3),
+            filled: true, fillColor: _surface,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _accent, width: 1.5)),
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
-            onPressed: () {
-              if (controller.text.trim().toUpperCase() == answer.toUpperCase()) {
-                setState(() {
-                  _solved = true;
-                  _result = 'Верно! Номер машины расшифрован.';
-                });
-              } else {
-                setState(() {
-                  _solved = false;
-                  _result = 'Неверно. Попробуйте ещё раз.';
-                });
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00D4AA),
-              foregroundColor: const Color(0xFF050508),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: const Text('Проверить', style: TextStyle(fontWeight: FontWeight.w700)),
-          ),
-        ),
+        SizedBox(width: double.infinity, height: 46, child: _TGButton(text: 'Проверить', onPressed: () {
+          if (_ctrl.text.trim().toUpperCase() == answer.toUpperCase()) {
+            setState(() { _solved = true; _result = 'Верно! Номер расшифрован.'; });
+          } else { setState(() { _solved = false; _result = 'Неверно. Попробуйте ещё.'; }); }
+        })),
       ],
     );
   }
 
   Widget _buildTimeline() {
-    final events = List<String>.from(widget.game.data['events'] as List);
-    events.shuffle(Random(42));
-    final order = List<int>.generate(events.length, (i) => i);
+    final events = List<String>.from(widget.game.data['events'] as List)..shuffle(Random(42));
     return Column(
       children: [
-        const Text('Расставьте события в правильном порядке', style: TextStyle(color: Color(0xFF6A6A7A), fontSize: 12)),
-        const SizedBox(height: 12),
-        ...List.generate(events.length, (i) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFF161622),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF2A2A38), width: 0.5),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00D4AA).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text('${i + 1}', style: const TextStyle(color: Color(0xFF00D4AA), fontWeight: FontWeight.w700, fontSize: 13)),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(events[i], style: const TextStyle(fontSize: 13, color: Color(0xFFCCCCEE), height: 1.3)),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _solved = true;
-                _result = 'Хронология восстановлена! События происходили именно в этом порядке.';
-              });
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00D4AA),
-              foregroundColor: const Color(0xFF050508),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            child: const Text('Подтвердить порядок', style: TextStyle(fontWeight: FontWeight.w700)),
+        ...List.generate(events.length, (i) => Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Container(
+            width: double.infinity, padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10)),
+            child: Row(children: [
+              Container(width: 26, height: 26, decoration: BoxDecoration(color: _accent.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                child: Center(child: Text('${i + 1}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _accent)))),
+              const SizedBox(width: 10),
+              Expanded(child: Text(events[i], style: const TextStyle(fontSize: 13, color: _text1))),
+            ]),
           ),
-        ),
+        )),
+        const SizedBox(height: 12),
+        SizedBox(width: double.infinity, height: 46, child: _TGButton(text: 'Подтвердить', onPressed: () {
+          setState(() { _solved = true; _result = 'Хронология восстановлена!'; });
+        })),
       ],
     );
   }
@@ -2131,48 +1396,45 @@ class _MiniGameScreenState extends State<MiniGameScreen> {
     final options = List<String>.from(widget.game.data['options'] as List);
     final correct = widget.game.data['correct'] as String;
     final explanation = widget.game.data['explanation'] as String;
-
     return Column(
       children: [
-        const Icon(Icons.gavel, size: 48, color: Color(0xFFFF3366)),
+        const Icon(Icons.gavel, size: 44, color: _accent),
+        const SizedBox(height: 14),
+        const Text('Кто виновен?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
         const SizedBox(height: 16),
-        const Text('Кто виновен?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 8),
-        const Text('Выберите на основе собранных улик', style: TextStyle(color: Color(0xFF6A6A7A), fontSize: 12)),
-        const SizedBox(height: 24),
         ...options.map((opt) => Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                if (opt == correct) {
-                  setState(() {
-                    _solved = true;
-                    _result = 'Верно! $explanation';
-                  });
-                } else {
-                  setState(() {
-                    _solved = false;
-                    _result = 'Неверно. Пересмотрите улики и подумайте ещё раз.';
-                  });
-                }
-              },
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF161622),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF2A2A38), width: 0.5),
-                ),
-                child: Text(opt, style: const TextStyle(fontSize: 14, color: Color(0xFFCCCCEE), fontWeight: FontWeight.w600)),
-              ),
-            ),
-          ),
+          padding: const EdgeInsets.only(bottom: 8),
+          child: SizedBox(width: double.infinity, height: 46, child: _TGButton(text: opt, onPressed: () {
+            if (opt == correct) { setState(() { _solved = true; _result = 'Верно! $explanation'; }); }
+            else { setState(() { _solved = false; _result = 'Неверно. Пересмотрите улики.'; }); }
+          })),
         )),
       ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════
+// TG BUTTON
+// ═══════════════════════════════════════════
+
+class _TGButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
+  const _TGButton({required this.text, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _accent,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: 0,
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      ),
+      child: Text(text),
     );
   }
 }
