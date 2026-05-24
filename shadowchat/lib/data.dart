@@ -131,6 +131,8 @@ class GameState extends ChangeNotifier {
   bool _splashDone = false;
   int _currentTab = 0;
   String? _activeChatId;
+  String? _activeMiniGame;
+  int? _showingChapterIntro;
   bool _isTyping = false;
 
   int get currentChapter => _currentChapter;
@@ -138,13 +140,19 @@ class GameState extends ChangeNotifier {
   bool get splashDone => _splashDone;
   int get currentTab => _currentTab;
   String? get activeChatId => _activeChatId;
+  String? get activeMiniGame => _activeMiniGame;
+  int? get showingChapterIntro => _showingChapterIntro;
   bool get isTyping => _isTyping;
 
   void finishSplash() { _splashDone = true; notifyListeners(); }
   void setTab(int t) { _currentTab = t; notifyListeners(); }
-  void openChat(String id) { _activeChatId = id; notifyListeners(); }
+  void openChat(String id) { _activeChatId = id; _activeMiniGame = null; notifyListeners(); }
   void closeChat() { _activeChatId = null; notifyListeners(); }
   void setTyping(bool v) { _isTyping = v; notifyListeners(); }
+  void showChapterIntro(int ch) { _showingChapterIntro = ch; notifyListeners(); }
+  void dismissChapterIntro() { _showingChapterIntro = null; notifyListeners(); }
+  void openMiniGame(String type) { _activeMiniGame = type; notifyListeners(); }
+  void closeMiniGame() { _activeMiniGame = null; notifyListeners(); }
 
   bool hasSeen(String msgId) => _seenMessages.contains(msgId);
   void markSeen(String msgId) { _seenMessages.add(msgId); notifyListeners(); }

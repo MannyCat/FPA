@@ -1,4 +1,4 @@
-#Sun May 24 19:11:05 UTC 2026
+#Sun May 24 19:23:45 UTC 2026
 base.0=/home/z/FPA/shadowchat/build/app/intermediates/dex/release/minifyReleaseWithR8/classes.dex
 path.0=classes.dex
 renamed.0=classes.dex
