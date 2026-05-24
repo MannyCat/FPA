@@ -1,0 +1,659 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'data.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(ChangeNotifierProvider(create: (_) => GameState(), child: const DarkFeedApp()));
+}
+
+class DarkFeedApp extends StatelessWidget {
+  const DarkFeedApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'DARKFEED',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+        colorScheme: const ColorScheme.dark(primary: Color(0xFFE94560), secondary: Color(0xFFFF9800), surface: Color(0xFF151520)),
+        appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF0D0D0D), foregroundColor: Colors.white, elevation: 0),
+        cardTheme: CardThemeData(color: const Color(0xFF1A1A2E), elevation: 2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(backgroundColor: Color(0xFF0D0D0D), selectedItemColor: Color(0xFFE94560), unselectedItemColor: Color(0xFF555555)),
+      ),
+      home: const AppShell(),
+    );
+  }
+}
+
+class AppShell extends StatefulWidget {
+  const AppShell({super.key});
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
+  @override
+  Widget build(BuildContext context) {
+    final gs = context.watch<GameState>();
+    if (!gs.splashDone) return const SplashScreen();
+    final charId = gs.viewingCharacterId;
+    if (charId != null) {
+      final chars = getCharacters();
+      final ch = chars.where((c) => c.id == charId).firstOrNull;
+      if (ch == null) { WidgetsBinding.instance.addPostFrameCallback((_) => gs.viewCharacter(null)); return const SizedBox(); }
+      return ProfileScreen(character: ch);
+    }
+    return Scaffold(
+      body: IndexedStack(index: gs.currentTab, children: const [FeedScreen(), ChapterSelectScreen(), ChatListScreen(), EvidenceScreen()]),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: gs.currentTab, onTap: (i) => gs.setTab(i), type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Лента'),
+          BottomNavigationBarItem(icon: Icon(Icons.auto_stories), label: 'Главы'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Чат'),
+          BottomNavigationBarItem(icon: Icon(Icons.fingerprint), label: 'Улики'),
+        ],
+      ),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _c;
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 2500));
+    _c.forward().then((_) { if (mounted) context.read<GameState>().finishSplash(); });
+  }
+  @override
+  void dispose() { _c.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(backgroundColor: const Color(0xFF050508), body: Center(
+      child: AnimatedBuilder(animation: _c, builder: (ctx, child) {
+        final t = _c.value;
+        final op = t < 0.15 ? t / 0.15 : (t > 0.85 ? (1 - t) / 0.15 : 1.0);
+        return Opacity(opacity: op.clamp(0.0, 1.0), child: Transform.scale(scale: 0.7 + t * 0.3, child: child));
+      }, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Container(width: 90, height: 90, decoration: BoxDecoration(borderRadius: BorderRadius.circular(22),
+          gradient: const LinearGradient(colors: [Color(0xFFE94560), Color(0xFF6C63FF)])),
+          child: const Icon(Icons.search, size: 42, color: Colors.white)),
+        const SizedBox(height: 24),
+        const Text('DARKFEED', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6, color: Color(0xFFE94560))),
+        const SizedBox(height: 8),
+        const Text('В тени ленты', style: TextStyle(fontSize: 14, color: Color(0xFF666666), letterSpacing: 2)),
+        const SizedBox(height: 48),
+        const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFE94560))),
+      ])),
+    ));
+  }
+}
+
+// FEED
+class FeedScreen extends StatelessWidget {
+  const FeedScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final gs = context.watch<GameState>();
+    final chars = getCharacters().where((c) => !c.isHidden).toList();
+    final allPosts = <Post>[];
+    for (final c in chars) { for (final p in c.posts) { if (p.chapterUnlock <= gs.maxUnlockedChapter) allPosts.add(p); } }
+    allPosts.sort((a, b) => b.time.compareTo(a.time));
+    return CustomScrollView(slivers: [
+      const SliverAppBar(pinned: true, floating: true, expandedHeight: 50,
+        title: Text('DARKFEED', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: Color(0xFFE94560), letterSpacing: 3)),
+        backgroundColor: Color(0xFF0D0D0D)),
+      SliverToBoxAdapter(child: _StoriesBar(characters: chars, gameState: gs)),
+      SliverList(delegate: SliverChildBuilderDelegate((ctx, i) => PostCard(post: allPosts[i], characters: chars), childCount: allPosts.length)),
+      const SliverToBoxAdapter(child: SizedBox(height: 60)),
+    ]);
+  }
+}
+
+class _StoriesBar extends StatelessWidget {
+  final List<Character> characters;
+  final GameState gameState;
+  const _StoriesBar({required this.characters, required this.gameState});
+  @override
+  Widget build(BuildContext context) {
+    final cs = characters.where((c) => c.stories.any((s) => s.chapterUnlock <= gameState.maxUnlockedChapter)).toList();
+    return SizedBox(height: 110, child: ListView.builder(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      itemCount: cs.length, itemBuilder: (ctx, i) => _buildStoryBubble(ctx, cs[i])));
+  }
+  Widget _buildStoryBubble(BuildContext ctx, Character c) {
+    return GestureDetector(onTap: () {
+      final stories = c.stories.where((s) => s.chapterUnlock <= gameState.maxUnlockedChapter).toList();
+      if (stories.isNotEmpty) Navigator.push(ctx, MaterialPageRoute(builder: (_) => StoryViewerScreen(character: c, stories: stories)));
+    }, child: Padding(padding: const EdgeInsets.symmetric(horizontal: 6), child: Column(children: [
+      Container(width: 66, height: 66, padding: const EdgeInsets.all(3),
+        decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [Color(0xFFE94560), Color(0xFFFF9800)])),
+        child: CircleAvatar(backgroundColor: const Color(0xFF0D0D0D),
+          child: Text(c.initials, style: TextStyle(color: Color(int.parse(c.avatarColor.replaceAll('#', '0xFF'))), fontSize: 18, fontWeight: FontWeight.bold)))),
+      const SizedBox(height: 4),
+      SizedBox(width: 70, child: Text(c.name.split(' ').first, style: const TextStyle(fontSize: 11, color: Colors.white70), textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
+    ])));
+  }
+}
+
+// POST CARD
+class PostCard extends StatelessWidget {
+  final Post post;
+  final List<Character> characters;
+  const PostCard({super.key, required this.post, required this.characters});
+  Character? get _char => characters.where((c) => c.id == post.characterId).firstOrNull;
+  @override
+  Widget build(BuildContext context) {
+    final c = _char;
+    if (c == null) return const SizedBox.shrink();
+    final gs = context.watch<GameState>();
+    return Card(margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(padding: const EdgeInsets.all(12), child: InkWell(onTap: () => gs.viewCharacter(c.id), child: Row(children: [
+        CircleAvatar(radius: 18, backgroundColor: Color(int.parse(c.avatarColor.replaceAll('#', '0xFF'))),
+          child: Text(c.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14))),
+        const SizedBox(width: 10),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(c.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+          Text('${c.username}  •  ${post.time}', style: const TextStyle(fontSize: 11, color: Color(0xFF777777))),
+        ])),
+        if (post.isEvidence) Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(color: const Color(0xFFE94560).withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
+          child: const Text('УЛИКА', style: TextStyle(color: Color(0xFFE94560), fontSize: 10, fontWeight: FontWeight.bold))),
+      ]))),
+      if (post.imageData != null) _buildPostImage(),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.favorite_border, size: 20, color: Color(0xFFE94560)), const SizedBox(width: 4),
+          Text('${(post.likes / 1000).toStringAsFixed(1)}K', style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+          const SizedBox(width: 16),
+          const Icon(Icons.chat_bubble_outline, size: 18, color: Color(0xFF666666)), const SizedBox(width: 4),
+          Text('${post.comments}', style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+          const Spacer(),
+          if (post.evidenceHint != null) GestureDetector(onTap: () => _showHint(context), child: const Icon(Icons.info_outline, size: 18, color: Color(0xFFFF9800))),
+        ]),
+        const SizedBox(height: 6),
+        Text(post.text, style: const TextStyle(fontSize: 14, height: 1.4, color: Color(0xFFDDDDDD))),
+        if (post.commentList.isNotEmpty) ...[const SizedBox(height: 8),
+          GestureDetector(onTap: () => _showComments(context), child: Text('Показать ${post.commentList.length} комментариев', style: const TextStyle(fontSize: 12, color: Color(0xFF888888)))),
+        ],
+      ])),
+      const SizedBox(height: 8),
+    ]));
+  }
+
+  Widget _buildPostImage() {
+    return Container(height: 200, width: double.infinity,
+      decoration: BoxDecoration(gradient: LinearGradient(colors: [const Color(0xFF1A0A2E), const Color(0xFF0D0D0D)])),
+      child: Stack(children: [
+        Center(child: Icon(Icons.location_city, size: 60, color: Colors.white.withOpacity(0.15))),
+        Positioned(bottom: 16, left: 16, right: 16,
+          child: Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), borderRadius: BorderRadius.circular(8)),
+            child: const Text('📸 Тёмная улица. Вечер. Блик камерного авто...', style: TextStyle(color: Colors.white70, fontSize: 12)))),
+      ]));
+  }
+
+  void _showHint(BuildContext ctx) {
+    showDialog(context: ctx, builder: (_) => AlertDialog(backgroundColor: const Color(0xFF1A1A2E),
+      title: const Row(children: [Icon(Icons.fingerprint, color: Color(0xFFFF9800)), SizedBox(width: 8), Text('Зацепка', style: TextStyle(color: Color(0xFFFF9800)))]),
+      content: Text(post.evidenceHint ?? '', style: const TextStyle(color: Color(0xFFCCCCCC), fontSize: 14)),
+      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Закрыть'))]));
+  }
+
+  void _showComments(BuildContext ctx) {
+    showModalBottomSheet(context: ctx, backgroundColor: const Color(0xFF0D0D0D), isScrollControlled: true,
+      builder: (_) => DraggableScrollableSheet(initialChildSize: 0.6, maxChildSize: 0.9, expand: false,
+        builder: (_, sc) => Column(children: [
+          const Padding(padding: EdgeInsets.all(16), child: Text('Комментарии', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+          Expanded(child: ListView.builder(controller: sc, itemCount: post.commentList.length, itemBuilder: (_, i) {
+            final cm = post.commentList[i];
+            final cmC = characters.where((c) => c.id == cm.characterId).firstOrNull;
+            return Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              CircleAvatar(radius: 14, backgroundColor: cmC != null ? Color(int.parse(cmC.avatarColor.replaceAll('#', '0xFF'))) : Colors.grey,
+                child: Text(cmC?.initials ?? '?', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))),
+              const SizedBox(width: 8), Expanded(child: RichText(text: TextSpan(children: [
+                TextSpan(text: '${cmC?.name ?? ''} ', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                TextSpan(text: cm.text, style: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB))),
+              ]))),
+            ]));
+          })),
+        ])));
+  }
+}
+
+// STORY VIEWER
+class StoryViewerScreen extends StatefulWidget {
+  final Character character;
+  final List<Story> stories;
+  const StoryViewerScreen({super.key, required this.character, required this.stories});
+  @override
+  State<StoryViewerScreen> createState() => _SVS();
+}
+
+class _SVS extends State<StoryViewerScreen> {
+  int _si = 0, _sl = 0;
+  double _prog = 0;
+  Timer? _timer;
+
+  void _start() { _timer?.cancel(); _prog = 0; _timer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+    if (!mounted) { _timer?.cancel(); return; }
+    setState(() { _prog += 0.05; if (_prog >= 1.0) _next(); });
+  }); }
+
+  void _next() { _timer?.cancel(); final s = widget.stories[_si]; if (_sl < s.slides.length - 1) { setState(() { _sl++; _start(); }); } else if (_si < widget.stories.length - 1) { setState(() { _si++; _sl = 0; _start(); }); } else Navigator.pop(context); }
+  void _prev() { _timer?.cancel(); if (_sl > 0) setState(() { _sl--; _start(); }); else if (_si > 0) setState(() { _si--; _sl = 0; _start(); }); }
+
+  @override
+  void dispose() { _timer?.cancel(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    final story = widget.stories[_si]; final slide = story.slides[_sl];
+    return GestureDetector(onTapDown: (d) { if (d.globalPosition.dx < MediaQuery.of(context).size.width / 2) _prev(); else _next(); },
+      child: Scaffold(backgroundColor: Colors.black, body: Stack(children: [
+        Container(width: double.infinity, height: double.infinity,
+          decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            colors: [Color(int.parse((slide.gradientTop ?? '#E94560').replaceAll('#', '0xFF'))), Color(int.parse((slide.gradientBottom ?? '#0D0D0D').replaceAll('#', '0xFF')))]))),
+        SafeArea(child: Padding(padding: const EdgeInsets.all(8), child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Row(children: List.generate(story.slides.length, (i) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: ClipRRect(borderRadius: BorderRadius.circular(2), child: LinearProgressIndicator(
+              value: i < _sl ? 1.0 : (i == _sl ? _prog : 0.0), backgroundColor: Colors.white24, color: Colors.white, minHeight: 3)))))),
+          const SizedBox(height: 16),
+          Row(children: [
+            CircleAvatar(radius: 16, backgroundColor: Color(int.parse(widget.character.avatarColor.replaceAll('#', '0xFF'))),
+              child: Text(widget.character.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+            const SizedBox(width: 8),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(widget.character.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14)),
+              Text(widget.character.username, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+            ]),
+          ]),
+          ]))),
+        Center(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 32), child: Text(slide.text, textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.white, height: 1.5)))),
+        Positioned(top: 60, right: 16, child: IconButton(icon: const Icon(Icons.close, color: Colors.white70), onPressed: () => Navigator.pop(context))),
+      ])));
+  }
+}
+
+// PROFILE
+class ProfileScreen extends StatelessWidget {
+  final Character character;
+  const ProfileScreen({super.key, required this.character});
+  @override
+  Widget build(BuildContext context) {
+    final gs = context.watch<GameState>();
+    final posts = character.posts.where((p) => p.chapterUnlock <= gs.maxUnlockedChapter).toList();
+    return Scaffold(appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => gs.viewCharacter(null)),
+      title: Text(character.username, style: const TextStyle(fontWeight: FontWeight.bold))),
+      body: SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(padding: const EdgeInsets.all(20), child: Row(children: [
+          CircleAvatar(radius: 40, backgroundColor: Color(int.parse(character.avatarColor.replaceAll('#', '0xFF'))),
+            child: Text(character.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 28))),
+          const SizedBox(width: 20), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(character.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(character.bio, style: const TextStyle(fontSize: 13, color: Color(0xFF999999), height: 1.3)),
+            const SizedBox(height: 8),
+            Row(children: [
+              Text('${(character.followers / 1000).toStringAsFixed(0)}K подписчиков', style: const TextStyle(fontSize: 12, color: Color(0xFF666666))),
+              const SizedBox(width: 12),
+              Text('${character.following} подписок', style: const TextStyle(fontSize: 12, color: Color(0xFF666666))),
+            ]),
+          ])),
+        ])),
+        if (character.isVictim) Container(margin: const EdgeInsets.symmetric(horizontal: 20), padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: const Color(0xFFE94560).withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFE94560).withOpacity(0.3))),
+          child: const Row(children: [Icon(Icons.warning, color: Color(0xFFE94560), size: 18), SizedBox(width: 8),
+            Text('Потеря связи — предполагается жертва', style: TextStyle(color: Color(0xFFE94560), fontSize: 13))])),
+        const SizedBox(height: 12), const Divider(color: Color(0xFF222222)),
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text('Публикации (${posts.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14))),
+        ...posts.map((p) => Padding(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          child: PostCard(post: p, characters: getCharacters()))),
+        const SizedBox(height: 80),
+      ])));
+  }
+}
+
+// CHAPTERS
+class ChapterSelectScreen extends StatelessWidget {
+  const ChapterSelectScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final gs = context.watch<GameState>();
+    final chapters = getChapters();
+    return CustomScrollView(slivers: [
+      const SliverAppBar(pinned: true, title: Text('Главы', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFFE94560)))),
+      SliverList(delegate: SliverChildBuilderDelegate((ctx, i) {
+        final ch = chapters[i]; final unlocked = ch.number <= gs.maxUnlockedChapter; final current = ch.number == gs.currentChapter;
+        return Padding(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), child: Card(margin: EdgeInsets.zero, child: InkWell(
+          onTap: unlocked ? () => _open(ctx, ch) : null, borderRadius: BorderRadius.circular(12),
+          child: Container(padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: current ? Border.all(color: const Color(0xFFE94560), width: 2) : null),
+            child: Row(children: [
+              Container(width: 44, height: 44, decoration: BoxDecoration(color: unlocked ? const Color(0xFFE94560) : const Color(0xFF333333), borderRadius: BorderRadius.circular(10)),
+                child: Center(child: Text('${ch.number}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: unlocked ? Colors.white : const Color(0xFF666666)))),
+              ),
+              const SizedBox(width: 14),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(ch.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: unlocked ? Colors.white : const Color(0xFF555555))),
+                const SizedBox(height: 2),
+                Text(ch.description, maxLines: 2, overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 12, color: unlocked ? const Color(0xFF999999) : const Color(0xFF444444))),
+              ])),
+              if (ch.miniGame != null && unlocked) const Icon(Icons.games_outlined, color: Color(0xFFFF9800), size: 20),
+              if (!unlocked) const Icon(Icons.lock_outline, color: Color(0xFF444444), size: 20),
+            ])))));
+      }, childCount: chapters.length)),
+    ]);
+  }
+
+  void _open(BuildContext ctx, Chapter ch) {
+    if (ch.miniGame != null) {
+      Navigator.push(ctx, MaterialPageRoute(builder: (_) => MiniGameScreen(chapter: ch)));
+    } else {
+      showDialog(context: ctx, barrierDismissible: false, builder: (_) => AlertDialog(backgroundColor: const Color(0xFF1A1A2E), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Column(children: [
+          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFFE94560).withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+            child: Text(ch.subtitle, style: const TextStyle(color: Color(0xFFE94560), fontSize: 13, fontWeight: FontWeight.bold))),
+          const SizedBox(height: 8), Text(ch.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        ]),
+        content: Text(ch.description, style: const TextStyle(color: Color(0xFFBBBBBB), fontSize: 14, height: 1.5)),
+        actions: [TextButton(onPressed: () {
+          ctx.read<GameState>().advanceChapter(ch.number); Navigator.of(ctx).pop(); Navigator.of(ctx).pop();
+        }, child: const Text('Продолжить', style: TextStyle(color: Color(0xFFE94560))))]));
+    }
+  }
+}
+
+// CHAT
+class ChatListScreen extends StatelessWidget {
+  const ChatListScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final gs = context.watch<GameState>();
+    final chars = getCharacters();
+    final pairs = <Map<String, String>>[];
+    for (int i = 0; i < chars.length; i++) {
+      for (int j = i + 1; j < chars.length; j++) {
+        final m1 = chars[i].messages.where((m) => (m.fromId == chars[j].id || m.toId == chars[j].id) && m.chapterUnlock <= gs.maxUnlockedChapter).toList();
+        if (m1.isNotEmpty) pairs.add({'a': chars[i].id, 'b': chars[j].id, 'n': '${chars[i].name.split(' ').first} ↔ ${chars[j].name.split(' ').first}'});
+      }
+    }
+    return CustomScrollView(slivers: [
+      const SliverAppBar(pinned: true, title: Text('Переписки', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFFE94560)))),
+      SliverList(delegate: SliverChildBuilderDelegate((ctx, i) => ListTile(
+        leading: const CircleAvatar(backgroundColor: Color(0xFFE94560), child: Icon(Icons.chat, color: Colors.white, size: 20)),
+        title: Text(pairs[i]['n']!, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+        trailing: const Icon(Icons.chevron_right, color: Color(0xFF444444)),
+        onTap: () => Navigator.push(ctx, MaterialPageRoute(builder: (_) => ChatDetail(aId: pairs[i]['a']!, bId: pairs[i]['b']!)))),
+      childCount: pairs.length)),
+    ]);
+  }
+}
+
+class ChatDetail extends StatelessWidget {
+  final String aId, bId;
+  const ChatDetail({super.key, required this.aId, required this.bId});
+  @override
+  Widget build(BuildContext context) {
+    final gs = context.watch<GameState>();
+    final chars = getCharacters();
+    final a = chars.firstWhere((c) => c.id == aId); final b = chars.firstWhere((c) => c.id == bId);
+    final msgs = <ChatMessage>[...a.messages.where((m) => (m.fromId == bId || m.toId == bId) && m.chapterUnlock <= gs.maxUnlockedChapter),
+      ...b.messages.where((m) => (m.fromId == aId || m.toId == aId) && m.chapterUnlock <= gs.maxUnlockedChapter)];
+    msgs.sort((x, y) => x.time.compareTo(y.time));
+    return Scaffold(appBar: AppBar(title: Text('${a.name.split(' ').first} ↔ ${b.name.split(' ').first}', style: const TextStyle(fontSize: 14))),
+      body: msgs.isEmpty ? const Center(child: Text('Нет доступных сообщений', style: TextStyle(color: Color(0xFF555555))))
+        : ListView.builder(padding: const EdgeInsets.all(12), itemCount: msgs.length, itemBuilder: (ctx, i) {
+        final m = msgs[i]; final isRight = m.fromId == aId;
+        final sender = chars.firstWhere((c) => c.id == m.fromId, orElse: () => a);
+        if (m.isDeleted) return Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Align(alignment: Alignment.center,
+          child: Text('🚫 Сообщение удалено', style: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 12, fontStyle: FontStyle.italic))));
+        return Align(alignment: isRight ? Alignment.centerRight : Alignment.centerLeft, child: Container(
+          constraints: BoxConstraints(maxWidth: MediaQuery.of(ctx).size.width * 0.8),
+          margin: const EdgeInsets.symmetric(vertical: 3), padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(color: isRight ? const Color(0xFFE94560).withOpacity(0.2) : const Color(0xFF1E1E30),
+            borderRadius: BorderRadius.only(topLeft: const Radius.circular(14), topRight: const Radius.circular(14),
+              bottomLeft: Radius.circular(isRight ? 14 : 4), bottomRight: Radius.circular(isRight ? 4 : 14))),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            if (!isRight) Text(sender.name, style: TextStyle(color: Color(int.parse(sender.avatarColor.replaceAll('#', '0xFF'))), fontSize: 11, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 2), Text(m.text, style: const TextStyle(fontSize: 14, color: Colors.white, height: 1.3)),
+            const SizedBox(height: 4), Text(m.time, style: const TextStyle(fontSize: 10, color: Color(0xFF666666))),
+          ])));
+      }));
+  }
+}
+
+// EVIDENCE
+class EvidenceScreen extends StatelessWidget {
+  const EvidenceScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final gs = context.watch<GameState>();
+    final all = getEvidenceItems();
+    final found = all.where((e) => e.chapterFound <= gs.maxUnlockedChapter).toList();
+    return CustomScrollView(slivers: [
+      const SliverAppBar(pinned: true, title: Text('Улики', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFFE94560)))),
+      SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(16), child: Container(padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: const Color(0xFFE94560).withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
+        child: Row(children: [
+          const Icon(Icons.fingerprint, color: Color(0xFFE94560), size: 32), const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Собрано улик', style: TextStyle(color: Color(0xFF999999), fontSize: 12)),
+            Text('${found.length} / ${all.length}', style: const TextStyle(color: Color(0xFFE94560), fontSize: 24, fontWeight: FontWeight.bold)),
+          ])),
+          SizedBox(width: 60, height: 60, child: CircularProgressIndicator(value: found.length / all.length,
+            strokeWidth: 6, backgroundColor: const Color(0xFF333333), valueColor: const AlwaysStoppedAnimation(Color(0xFFE94560)))),
+        ])))),
+      SliverList(delegate: SliverChildBuilderDelegate((ctx, i) {
+        final ev = found[i]; final chars = getCharacters(); final ch = chars.firstWhere((c) => c.id == ev.characterId, orElse: () => chars[0]);
+        return Padding(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3), child: Card(margin: EdgeInsets.zero, child: Padding(
+          padding: const EdgeInsets.all(14), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(width: 40, height: 40, decoration: BoxDecoration(color: const Color(0xFFFF9800).withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+              child: Icon(ev.icon, color: const Color(0xFFFF9800), size: 20)),
+            const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(ev.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: 2),
+              Text(ev.description, style: const TextStyle(fontSize: 12, color: Color(0xFF999999), height: 1.3)),
+              const SizedBox(height: 4),
+              Row(children: [
+                CircleAvatar(radius: 8, backgroundColor: Color(int.parse(ch.avatarColor.replaceAll('#', '0xFF'))),
+                  child: Text(ch.initials, style: const TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold))),
+                const SizedBox(width: 4),
+                Text('Глава ${ev.chapterFound} • ${ch.name}', style: const TextStyle(fontSize: 10, color: Color(0xFF666666))),
+              ]),
+            ])),
+          ]))));
+      }, childCount: found.length)),
+    ]);
+  }
+}
+
+// MINI-GAMES
+class MiniGameScreen extends StatefulWidget {
+  final Chapter chapter;
+  const MiniGameScreen({super.key, required this.chapter});
+  @override
+  State<MiniGameScreen> createState() => _MGS();
+}
+
+class _MGS extends State<MiniGameScreen> {
+  bool _done = false;
+  String _fb = '';
+  final List<int> _tapped = [];
+  String _input = '';
+
+  bool get _completed => context.read<GameState>().hasCompletedGame('mg_${widget.chapter.number}');
+
+  @override
+  void initState() { super.initState(); _done = _completed; }
+
+  void _check(BuildContext ctx) {
+    final mg = widget.chapter.miniGame!; bool ok = false;
+    if (mg.type == 'photo_search') {
+      final clues = (mg.data['clues'] as List).map((e) => e as int).toSet();
+      ok = _tapped.toSet().containsAll(clues);
+      if (!ok) _fb = 'Найдено ${_tapped.where((t) => clues.contains(t)).length}/${clues.length}';
+    } else if (mg.type == 'cipher' || mg.type == 'word_puzzle') {
+      ok = _input.trim() == (mg.data['answer'] as String).trim();
+      if (!ok) _fb = 'Неправильно. Попробуйте ещё раз.';
+    } else if (mg.type == 'spot_fake') {
+      final fakes = (mg.data['fake_indices'] as List).map((e) => e as int).toSet();
+      ok = _tapped.toSet().containsAll(fakes);
+      if (!ok) _fb = 'Неверно. Обратите внимание на дату и количество постов.';
+    } else if (mg.type == 'deduction' || mg.type == 'final_choice') {
+      final a = mg.data['answer'] as String;
+      ok = _input.toLowerCase().contains(a.split(' ').first.toLowerCase());
+      if (!ok) _fb = mg.type == 'final_choice' ? (mg.data['explanation'] as String) : 'Подумайте ещё.';
+    } else if (mg.type == 'match' || mg.type == 'timeline') { ok = true; }
+    if (ok) {
+      setState(() { _done = true; _fb = 'Улика найдена!'; });
+      context.read<GameState>().addEvidence('ev_ch${widget.chapter.number}');
+      context.read<GameState>().completeMiniGame('mg_${widget.chapter.number}');
+    } else { setState(() {}); }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mg = widget.chapter.miniGame!;
+    return Scaffold(appBar: AppBar(title: Text(mg.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+      body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
+        Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: const Color(0xFFE94560).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          child: Text(mg.instruction, style: const TextStyle(fontSize: 14, color: Color(0xFFE94560), fontWeight: FontWeight.w500))),
+        const SizedBox(height: 20),
+        if (_done) ...[
+          Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: const Color(0xFF00D4AA).withOpacity(0.1), borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF00D4AA).withOpacity(0.3))),
+            child: const Column(children: [Icon(Icons.check_circle, color: Color(0xFF00D4AA), size: 48),
+              SizedBox(height: 8), Text('Мини-игра пройдена!', style: TextStyle(color: Color(0xFF00D4AA), fontSize: 18, fontWeight: FontWeight.bold))])),
+          const SizedBox(height: 16),
+          ElevatedButton(onPressed: () { context.read<GameState>().advanceChapter(widget.chapter.number); Navigator.pop(context); }, child: const Text('Продолжить')),
+        ] else _buildGame(mg),
+        if (_fb.isNotEmpty && !_done) Padding(padding: const EdgeInsets.only(top: 16), child: Text(_fb, style: const TextStyle(color: Color(0xFFFF9800), fontSize: 13))),
+      ])));
+  }
+
+  Widget _buildGame(MiniGame mg) {
+    if (mg.type == 'photo_search') {
+      final g = (mg.data['grid'] as String).split('x'); final cols = int.parse(g[0]); final rows = int.parse(g[1]);
+      final clues = (mg.data['clues'] as List).map((e) => e as int).toSet();
+      return GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: cols, crossAxisSpacing: 2, mainAxisSpacing: 2),
+        itemCount: cols * rows, itemBuilder: (_, i) { final ic = clues.contains(i); final it = _tapped.contains(i);
+          return GestureDetector(onTap: () => setState(() { if (!it) _tapped.add(i); }), child: Container(
+            decoration: BoxDecoration(color: it ? (ic ? const Color(0xFFE94560) : const Color(0xFF333333)) : const Color(0xFF0D1520),
+              border: Border.all(color: it && ic ? const Color(0xFFE94560) : const Color(0xFF222233))),
+            child: Center(child: Icon(it && ic ? Icons.fingerprint : Icons.grain, size: 16, color: it && ic ? Colors.white : const Color(0xFF333344)))));
+        });
+    }
+    if (mg.type == 'cipher') return Column(children: [
+      const SizedBox(height: 12),
+      Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: const Color(0xFF1E1E30), borderRadius: BorderRadius.circular(12)),
+        child: Text('Зашифровано: ${mg.data['encrypted']}', style: const TextStyle(color: Color(0xFFCCCCCC), fontSize: 14))),
+      const SizedBox(height: 8),
+      Text('Подсказка: шифр Цезаря, сдвиг на ${mg.data['shift']}', style: const TextStyle(color: Color(0xFF666666), fontSize: 12)),
+      const SizedBox(height: 16),
+      TextField(onChanged: (v) => _input = v, decoration: InputDecoration(filled: true, fillColor: const Color(0xFF1E1E30),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+        hintText: 'Введите расшифрованный текст...', hintStyle: const TextStyle(color: Color(0xFF555555)))),
+      const SizedBox(height: 12),
+      ElevatedButton(onPressed: () => _check(context), child: const Text('Проверить')),
+    ]);
+    if (mg.type == 'word_puzzle') return Column(children: [
+      const SizedBox(height: 12), Text('Соберите фразу из слов:', style: const TextStyle(color: Color(0xFF999999), fontSize: 13)),
+      const SizedBox(height: 16),
+      TextField(onChanged: (v) => _input = v, maxLines: 2, decoration: InputDecoration(filled: true, fillColor: const Color(0xFF1E1E30),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+        hintText: 'Введите восстановленный текст...', hintStyle: const TextStyle(color: Color(0xFF555555)))),
+      const SizedBox(height: 12),
+      ElevatedButton(onPressed: () => _check(context), child: const Text('Проверить')),
+    ]);
+    if (mg.type == 'spot_fake') {
+      final profiles = mg.data['profiles'] as List;
+      return Column(children: List.generate(profiles.length, (i) {
+        final p = profiles[i] as Map<String, dynamic>; final it = _tapped.contains(i); final fake = p['fake'] as bool;
+        return GestureDetector(onTap: () => setState(() { if (!it) _tapped.add(i); }),
+          child: Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: it ? (fake ? const Color(0xFFE94560).withOpacity(0.15) : const Color(0xFF00D4AA).withOpacity(0.15)) : const Color(0xFF1A1A2E),
+              borderRadius: BorderRadius.circular(12), border: Border.all(color: it ? (fake ? const Color(0xFFE94560) : const Color(0xFF00D4AA)) : const Color(0xFF222233))),
+            child: Row(children: [
+              CircleAvatar(radius: 22, backgroundColor: it ? (fake ? const Color(0xFFE94560) : const Color(0xFF00D4AA)) : const Color(0xFF333344),
+                child: Text(p['name'].toString().substring(0, 1).toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+              const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('@${p['name']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text('Подписчики: ${p['followers']} | Посты: ${p['posts']} | С ${p['joined']}', style: const TextStyle(fontSize: 11, color: Color(0xFF888888))),
+              ])),
+              if (it) Icon(fake ? Icons.warning : Icons.check_circle, color: fake ? const Color(0xFFE94560) : const Color(0xFF00D4AA)),
+            ])));
+      }));
+    }
+    if (mg.type == 'match' || mg.type == 'timeline') {
+      final events = mg.type == 'timeline' ? List<String>.from((mg.data['events'] as List).map((e) => e.toString())) : <String>[];
+      return _TimelineWidget(events: events, onDone: () { context.read<GameState>().advanceChapter(widget.chapter.number); Navigator.pop(context); });
+    }
+    // deduction / final_choice
+    final opts = mg.data['options'] as List;
+    final btns = opts.map((o) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E1E30), foregroundColor: Colors.white),
+            onPressed: () { _input = o.toString(); _check(context); },
+            child: Text(o.toString(), style: const TextStyle(fontSize: 15)),
+          ),
+        ),
+      );
+    }).toList();
+    return Column(children: [
+      const SizedBox(height: 12), Text('Выберите:', style: const TextStyle(color: Color(0xFF999999), fontSize: 13)),
+      const SizedBox(height: 8),
+      ...btns,
+      const SizedBox(height: 8),
+    ]);
+  }
+}
+
+class _TimelineWidget extends StatefulWidget {
+  final List<String> events;
+  final VoidCallback onDone;
+  const _TimelineWidget({required this.events, required this.onDone});
+  @override
+  State<_TimelineWidget> createState() => _TLW();
+}
+
+class _TLW extends State<_TimelineWidget> {
+  late List<String> _ev;
+  @override
+  void initState() { super.initState(); _ev = List.from(widget.events); }
+
+  void _swap(int i, int j) { if (i >= 0 && i < _ev.length && j >= 0 && j < _ev.length) setState(() { final t = _ev[i]; _ev[i] = _ev[j]; _ev[j] = t; }); }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      const Text('Переместите события в правильный порядок:', style: TextStyle(color: Color(0xFF999999), fontSize: 12)),
+      const SizedBox(height: 8),
+      ...List.generate(_ev.length, (i) => Container(margin: const EdgeInsets.only(bottom: 4), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(color: const Color(0xFF1A1A2E), borderRadius: BorderRadius.circular(10)),
+        child: Row(children: [
+          CircleAvatar(radius: 12, backgroundColor: const Color(0xFFE94560), child: Text('${i + 1}', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold))),
+          const SizedBox(width: 10), Expanded(child: Text(_ev[i], style: const TextStyle(fontSize: 13))),
+          IconButton(onPressed: i > 0 ? () => _swap(i, i - 1) : null, icon: const Icon(Icons.arrow_upward, size: 16, color: Color(0xFF666666))),
+          IconButton(onPressed: i < _ev.length - 1 ? () => _swap(i, i + 1) : null, icon: const Icon(Icons.arrow_downward, size: 16, color: Color(0xFF666666))),
+        ]))),
+      const SizedBox(height: 12),
+      ElevatedButton(onPressed: widget.onDone, child: const Text('Готово')),
+    ]);
+  }
+}
